@@ -397,6 +397,10 @@ local function startPlayingHit(i)
 	ricochets = hg.hits[i].ricochets
 	local basebone = hg.hits[i].basebone
 	inf = hg.hits[i].inf
+	if not IsValid(csmodel) or csmodel == nil then
+		csmodel = ClientsideModel("models/Humans/group01/Female_03.mdl",RENDERMODE_TRANSCOLOR)
+		csmodel:SetNoDraw(true)
+	end
 	csmodel:SetPos(bone0:GetTranslation())
 	csmodel:SetModel(model)
 	csmodel.armors = hg.hits[i].armors or {}
@@ -445,7 +449,7 @@ hook.Add("Player Spawn","removehuys",function(ply)
 	hg.hits = {}
 end)
 
-net.Receive("tracePosesSend", function()
+/*net.Receive("tracePosesSend", function()
 	local tracePoses = net.ReadTable()
 	local ent = net.ReadEntity()
 	local hitBoxs = net.ReadTable()
@@ -462,7 +466,7 @@ net.Receive("tracePosesSend", function()
 	local inf = net.ReadString()
 	local att = net.ReadString()
 
-	timer.Simple(0.1,function()
+	-- timer.Simple(0.1,function()
 		local ent = hg.GetCurrentCharacter(ent) or ent
 		local basebone = ent:GetBoneMatrix(bone)
 		if not basebone then return end
@@ -524,8 +528,8 @@ net.Receive("tracePosesSend", function()
 			armors = armors,
 			inf = inf,
 		})
-	end)
-end)
+	-- end)
+end)*/
 
 function draw.RotatedText( text, x, y, font, color, ang)
 	render.PushFilterMag( TEXFILTER.ANISOTROPIC )

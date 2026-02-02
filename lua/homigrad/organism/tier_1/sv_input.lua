@@ -303,7 +303,7 @@ hook.Add("PlayerDeathThink","stoprespawning",function()
 	if hg_norespawn:GetBool() then return true end
 end)
 
-util.AddNetworkString("tracePosesSend")
+-- util.AddNetworkString("tracePosesSend")
 --util.AddNetworkString("wound_debug")
 util.AddNetworkString("hg_bloodimpact")
 --util.AddNetworkString("blood particle explode")
@@ -749,32 +749,32 @@ hook.Add("EntityTakeDamage", "homigrad-damage", function(ent, dmgInfo)
 		bone = tr.PhysicsBone
 	end
 
-	if tracePoses then
-		local mat = ent:GetBoneMatrix(ent:TranslatePhysBoneToBone(bone))
+	-- if tracePoses then
+	-- 	local mat = ent:GetBoneMatrix(ent:TranslatePhysBoneToBone(bone))
 
-		table.insert(tracePoses,1,dmgPos - dir * 100)
-		table.insert(tracePoses,1,dmgPos - dir * 200)
+	-- 	table.insert(tracePoses,1,dmgPos - dir * 100)
+	-- 	table.insert(tracePoses,1,dmgPos - dir * 200)
 
-		local rf = RecipientFilter()
-		if org.owner:IsPlayer() then rf:AddPlayer(org.owner) end
-		if dmgInfo:GetAttacker():IsPlayer() then rf:AddPlayer(dmgInfo:GetAttacker()) end
+	-- 	local rf = RecipientFilter()
+	-- 	if org.owner:IsPlayer() then rf:AddPlayer(org.owner) end
+	-- 	if dmgInfo:GetAttacker():IsPlayer() then rf:AddPlayer(dmgInfo:GetAttacker()) end
 		
-		local name = dmgInfo:GetAttacker():IsPlayer() and dmgInfo:GetAttacker():Name() or dmgInfo:GetAttacker():GetClass()
-		net.Start("tracePosesSend")
-		net.WriteTable(tracePoses)
-		net.WriteEntity(ent)
-		net.WriteTable(hitBoxs)
-		net.WriteFloat(pen)
-		net.WriteFloat(size)
-		net.WriteInt(ent:TranslatePhysBoneToBone(bone) or 0,32)
-		net.WriteVector(mat:GetTranslation())
-		net.WriteAngle(mat:GetAngles())
-		net.WriteString(ent:GetModel())
-		net.WriteMatrix(ent:GetBoneMatrix(0))
-		net.WriteString(tostring(inf.PrintName or "Unknown"))
-		net.WriteString(tostring(name))
-		net.Send(rf)
-	end
+	-- 	local name = dmgInfo:GetAttacker():IsPlayer() and dmgInfo:GetAttacker():Name() or dmgInfo:GetAttacker():GetClass()
+	-- 	net.Start("tracePosesSend")
+	-- 	net.WriteTable(tracePoses)
+	-- 	net.WriteEntity(ent)
+	-- 	net.WriteTable(hitBoxs)
+	-- 	net.WriteFloat(pen)
+	-- 	net.WriteFloat(size)
+	-- 	net.WriteInt(ent:TranslatePhysBoneToBone(bone) or 0,32)
+	-- 	net.WriteVector(mat:GetTranslation())
+	-- 	net.WriteAngle(mat:GetAngles())
+	-- 	net.WriteString(ent:GetModel())
+	-- 	net.WriteMatrix(ent:GetBoneMatrix(0))
+	-- 	net.WriteString(tostring(inf.PrintName or "Unknown"))
+	-- 	net.WriteString(tostring(name))
+	-- 	net.Send(rf)
+	-- end
 	
 	local dmgPos = dmgInfo:GetDamagePosition()
 	local dirCool = dmgInfo:GetDamageForce():GetNormalized()
