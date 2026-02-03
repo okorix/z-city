@@ -6,6 +6,6 @@ https://github.com/uzelezz123/8bit_zcity - 8bit module (compiled version is in l
 
 ## The numbers in the version number indicate:
 A.Bcc -> 1.02
-- A -> Global update, includes a ton of changes.
-- B -> Added mechanics, avarage gameplay changes
-- c -> Fixes and other things
+- A -> Global updates
+- B -> New mechanics, gameplay changes
+- c -> Fixes and other small things
