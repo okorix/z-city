@@ -1013,6 +1013,10 @@ hook.Add("Player-Ragdoll think", "organism-think-client-blood", function(ply, en
 				if wound[5] + beatsPerSecond < time then
 					if seen and ent:LookupBone(wound[4]) then
 						local bone = wound[4]
+						local should = !(hg.amputatedlimbs2[bone] and org[hg.amputatedlimbs2[bone].."amputated"])
+
+						if !should then continue end
+
 						local mat = ent:GetBoneMatrix(ent:LookupBone(bone))
 						if not mat then return end
 						local bonePos, boneAng = mat:GetTranslation(), mat:GetAngles()
@@ -1053,8 +1057,13 @@ hook.Add("Player-Ragdoll think", "organism-think-client-blood", function(ply, en
 				local pos, ang = ent:GetBonePosition(ent:LookupBone(wound[4]))
 				if (owner:IsPlayer() and owner:Alive()) or not owner:IsPlayer() then
 					local size = math.random(1, 2) * math.max(math.min(wound[1], 1), 0.5)
-					if seen then
+					if seen and ent:LookupBone(wound[4]) then
 						local bone = wound[4]
+
+						local should = !(hg.amputatedlimbs2[bone] and org[hg.amputatedlimbs2[bone].."amputated"])
+
+						if !should then continue end
+						
 						local mat = ent:GetBoneMatrix(ent:LookupBone(bone))
 						if not mat then return end
 						local bonePos, boneAng = mat:GetTranslation(), mat:GetAngles()
@@ -1124,6 +1133,7 @@ local limbs = {
 	["rleg"] = "ValveBiped.Bip01_R_Calf",
 	["larm"] = "ValveBiped.Bip01_L_Forearm",
 	["rarm"] = "ValveBiped.Bip01_R_Forearm",
+	["head"] = "ValveBiped.Bip01_Head1"
 }
 
 function hg.amputatedbone(ent, bone)
