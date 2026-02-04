@@ -1126,6 +1126,7 @@ util.AddNetworkString("Abnormalties(SendOpenedPage)")
 					if(text == "/zoneabno")then
 						if(ply.AbnormaltiesReady)then
 							local knowledge = ply.AbnormaltiesKnowledge
+							
 							if(knowledge["instabillity"])then
 								local found_zone = PLUGIN.DoWithinZones(ply:GetPos(), function(zone_id, zone)
 								PLUGIN.ShowMessage(ply, [[
