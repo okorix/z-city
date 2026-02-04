@@ -46,6 +46,10 @@ function ENT:Think()
         self:ActivateExplosive()
     end
 
+    if CLIENT and not self.HookAdded and self:GetNWFloat("Safety",CurTime()) < CurTime() then
+        self:CreateLaserHook()
+    end
+
     self:NextThink(CurTime())
     return true
 end
