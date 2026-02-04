@@ -24,9 +24,9 @@ function ENT:Think()
     tr.collisiongroup = COLLISION_GROUP_NONE
     local tr = util.TraceLine(tr)
 
-    -- if developer:GetBool() then
-    --    debugoverlay.Line(pos, tr.HitPos, 1, color_white, true)
-    -- end
+	-- if CLIENT and developer:GetBool() and LocalPlayer():IsAdmin() then
+	-- 	debugoverlay.Line(pos, tr.HitPos, 1, color_white, true)
+	-- end
 
     self.TraceStart = pos
     self.TraceHitPos = tr.HitPos
