@@ -127,6 +127,9 @@ end
 
 function SWEP:InUse()
 	local ply = self:GetOwner()
+    if not IsValid(ply) then
+        return false
+    end
 	local ent = IsValid(ply.FakeRagdoll) and ply.FakeRagdoll or ply
 	local org = ply.organism
 
@@ -576,6 +579,7 @@ function SWEP:SetHandPos(noset)
 
 	local wm = self:GetWM()
 	if !IsValid(wm) then return end
+    if !IsValid(ply) then return end
 	-- ent:SetupBones()
 
 	self.rhandik = self.setrh and IsValid(owner)//self.setrh
