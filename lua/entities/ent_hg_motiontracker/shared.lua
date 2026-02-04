@@ -11,6 +11,9 @@ ENT.AlarmCD = 0
 ENT.offsetPos = Vector(-2.25, 1.38, 0)
 ENT.offsetAng = Angle(-90, 180, 0)
 
+ENT.Color = Color(115, 135, 255)
+ENT.ColorDetected = Color(255,0,0,175)
+
 function ENT:Think()
 	local tr = {}
 	local pos, ang = self:GetPos(), self:GetAngles()

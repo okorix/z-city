@@ -22,7 +22,7 @@ function ENT:CreateLaserHook()
 			0.35,
 			0,
 			1,
-			self:GetNWFloat("AlarmCD", 0) > CurTime() and Color(255,0,0,175) or Color(115, 135, 255, 64)
+			self:GetNWFloat("AlarmCD", 0) > CurTime() and self.ColorDetected or self.Color
 		)
 	end)
 end
