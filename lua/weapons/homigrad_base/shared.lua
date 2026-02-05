@@ -1434,9 +1434,10 @@ hg.postureFunctions2 = {
 			self.AdditionalPosPreLerp[2] = self.AdditionalPosPreLerp[2] - 2
 			self.AdditionalPosPreLerp[3] = self.AdditionalPosPreLerp[3] + 6 - add
 		else
-			self.AdditionalPosPreLerp[1] = self.AdditionalPosPreLerp[1] - 2
+			self.AdditionalPosPreLerp[1] = self.AdditionalPosPreLerp[1] - -5
 			self.AdditionalPosPreLerp[2] = self.AdditionalPosPreLerp[2] + -2
 			self.AdditionalPosPreLerp[3] = self.AdditionalPosPreLerp[3] + 6 - add
+			self.AdditionalAngPreLerp[1] = self.AdditionalAngPreLerp[1] + 12
 		end
 	end,
 	[9] = function(self,ply)
