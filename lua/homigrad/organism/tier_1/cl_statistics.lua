@@ -1,3 +1,5 @@
+local hg_xray = ConVarExists("hg_xray") and GetConVar("hg_xray") or CreateConVar("hg_xray",0,FCVAR_ARCHIVE,"enables xray mode like in sniper elite 3",0,1)
+
 net.Receive("organism_send", function()
 	local org = net.ReadTable()
 	local force = net.ReadBool()
@@ -451,7 +453,8 @@ hook.Add("Player Spawn","removehuys",function(ply)
 	hg.hits = {}
 end)
 
-/*net.Receive("tracePosesSend", function()
+net.Receive("tracePosesSend", function()
+	if not hg_xray:GetBool() then return end
 	local tracePoses = net.ReadTable()
 	local ent = net.ReadEntity()
 	local hitBoxs = net.ReadTable()
@@ -531,7 +534,7 @@ end)
 			inf = inf,
 		})
 	-- end)
-end)*/
+end)
 
 function draw.RotatedText( text, x, y, font, color, ang)
 	render.PushFilterMag( TEXFILTER.ANISOTROPIC )
@@ -714,7 +717,7 @@ hook.Add("HUDPaint","homigrad-wound-debug",function()
 					surface.SetDrawColor(155,0,0,15)
 					surface.DrawTexturedRect(0,0,ScrW(),ScrH(),0)
 				cam.End2D()
-				--skiletmodel:DrawModel() // надо доделать, когда разберусь в стенсилах // а все уже, работает
+				skiletmodel:DrawModel() // надо доделать, когда разберусь в стенсилах // а все уже, работает
 				cam.Start2D()
 					surface.SetDrawColor(155,0,0,95)
 					surface.DrawTexturedRect(0,0,ScrW(),ScrH(),0)
@@ -742,11 +745,11 @@ hook.Add("HUDPaint","homigrad-wound-debug",function()
 					local organ = box[6] and organs[box[6]][box[7]]
 					if not hitBoxs[i] then continue end
 
-					--if organ and hitorgans[i] then
-					--	cam.Start2D()
-					--		draw.SimpleText(hg.organism.translationTbl[organ[1]] or organ[1], "HomigradFontSmall", box[1]:ToScreen().x + math.sin(CurTime()%(i))^3 * (5%i),box[1]:ToScreen().y + math.cos(CurTime()%(i)) * (5%i), organ and organ[6])
-					--	cam.End2D()
-					--end
+					if organ and hitorgans[i] then
+						cam.Start2D()
+							draw.SimpleText(hg.organism.translationTbl[organ[1]] or organ[1], "HomigradFontSmall", box[1]:ToScreen().x + math.sin(CurTime()%(i))^3 * (5%i),box[1]:ToScreen().y + math.cos(CurTime()%(i)) * (5%i), organ and organ[6])
+						cam.End2D()
+					end
 					
 				end
 				white.r = 255
@@ -776,27 +779,27 @@ hook.Add("HUDPaint","homigrad-wound-debug",function()
 			local countedorgans = {}
 			local organs2 = {}
 	
-			--for i, text in pairs(hitorgans) do
-			--	if countedorgans[text] then continue end
-			--	countedorgans[text] = true
-			--	
-			--	if ricochets[i] then
-			--		table.insert(organs2,ricochets[i]..tostring(hg.organism.translationTbl[hitorgans[i]] or hitorgans[i]))
-			--	else
-			--		table.insert(organs2,"Penetrated "..text)
-			--	end
-			--end
-			--
-			--for i, text in ipairs(organs2) do
-			--	local y = ScreenScale(200) + ScreenScale((i - 1) * (16))
-			--	draw.RoundedBox(0, ScreenScale(10), y, weight * 1.5, ScreenScale(16), littleblack)
-	--
-			--	draw.RoundedBox(1, ScreenScale(11), y, weight * 1.5 - 5, ScreenScale(16), color_black)
-			--	draw.SimpleText((hg.organism.translationTbl[text] or text), "HomigradFont", ScreenScale(12), y, white)
-			--end
+			for i, text in pairs(hitorgans) do
+				if countedorgans[text] then continue end
+				countedorgans[text] = true
+				
+				if ricochets[i] then
+					table.insert(organs2,ricochets[i]..tostring(hg.organism.translationTbl[hitorgans[i]] or hitorgans[i]))
+				else
+					table.insert(organs2,"Penetrated "..text)
+				end
+			end
+			
+			for i, text in ipairs(organs2) do
+				local y = ScreenScale(200) + ScreenScale((i - 1) * (16))
+				draw.RoundedBox(0, ScreenScale(10), y, weight * 1.5, ScreenScale(16), littleblack)
+	
+				draw.RoundedBox(1, ScreenScale(11), y, weight * 1.5 - 5, ScreenScale(16), color_black)
+				draw.SimpleText((hg.organism.translationTbl[text] or text), "HomigradFont", ScreenScale(12), y, white)
+			end
 
-			--colred.a = 255 * alpha
-			--draw.RotatedText("FATAL HIT",posX + 155 ,posY+85,"HomigradFontLarge",colred,15)
+			-- colred.a = 255 * alpha
+			-- draw.RotatedText("FATAL HIT",posX + 155 ,posY+85,"HomigradFontLarge",colred,15)
 		end
 	end
 end)
