@@ -51,14 +51,15 @@ function SWEP:Holster_End()
 end
 
 hook.Add("PlayerSwitchInFake","slingDrop",function(ply,oldWeapon,newWeapon)
-	do return end
+	-- do return end
 	if oldWeapon == newWeapon then return end
 	local inv = ply:GetNetVar("Inventory")
 	
 	if SERVER and not oldWeapon.bigNoDrop and oldWeapon.weaponInvCategory == 1 and not inv["Weapons"]["hg_sling"] then
+		print("123")
 		timer.Simple(0,function()
 			if oldWeapon:GetOwner() == ply then
-				//hg.drop(ply, oldWeapon, newWeapon)
+				hg.drop(ply, oldWeapon, newWeapon)
 			end
 		end)
 		
