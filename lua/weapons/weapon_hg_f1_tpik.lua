@@ -11,6 +11,8 @@ RMB to remove spoon.
 RMB - Low ready
 While low ready:
 LMB to remove spoon.
+
+R to set trap.
 ]]--"тильда двуеточее три"
 SWEP.Category = "Weapons - Explosive"
 SWEP.Spawnable = true

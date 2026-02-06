@@ -11,6 +11,8 @@ RMB to remove spoon.
 RMB - Low ready
 While low ready:
 LMB to remove spoon.
+
+R to set trap.
 ]]--"тильда двуеточее три"
 SWEP.Category = "Weapons - Explosive"
 SWEP.Spawnable = true
@@ -160,6 +162,9 @@ function SWEP:Deploy( wep )
 end
 
 function SWEP:Holster( wep )
+	if SERVER and self:GetNWBool("PlacedLOVUSHKA",false) then
+		self:Remove()
+	end
 	if SERVER then
 		--self:PlayAnim("idle")
 		self:SetShowSpoon(true)
@@ -180,6 +185,12 @@ function SWEP:Holster( wep )
 end
 
 if SERVER then
+	function SWEP:OwnerChanged()
+		if self:GetNWBool("PlacedLOVUSHKA",false) then
+			self:Remove()
+		end
+	end
+
     function SWEP:OnRemove() end
 
 	function SWEP:OnDrop()
@@ -498,5 +509,119 @@ function SWEP:PrimaryAttack()
 	self.Thrower = self:GetOwner()
 end
 
+local CantPlaceTraps = {
+	"weapon_hg_molotov_tpik",
+	"weapon_hg_pipebomb_tpik",
+	"weapon_hg_smokenade_tpik"
+}
+
 function SWEP:Reload()
+	if self:GetOwner():KeyPressed(IN_RELOAD) and not self.ReadyToThrow and not self.InThrowing then
+        self:SetTrap()
+    end
+end
+
+function SWEP:SetTrap()
+	if table.HasValue(CantPlaceTraps,self:GetClass()) then return end
+	if self.NoTrap or self.ReadyToThrow then return end
+	if self.CoolDown > CurTime() then return end
+	if self.NoTrap then return end
+	local time = CurTime()
+	if IsValid(self:GetNWEntity("fakeGun")) then return end
+	if CLIENT then return end
+	local ply = self:GetOwner()
+	local entownr
+	if IsValid(ply) then
+		entownr = hg.GetCurrentCharacter(ply)
+	end
+	
+	if ply:KeyDown(IN_WALK) then return end
+
+	if not hg.eyeTrace(ply).Hit then return end
+
+	self:SetShowGrenade(false)
+	self:SetShowSpoon(false)
+	self:SetShowPin(false)
+
+	if not self.startedattack and entownr == ply and not self:GetNWBool("PlacedLOVUSHKA",false) then
+		local tr = hg.eyeTrace(ply)
+		local ent = ents.Create(self.ENT)
+		local pos,ang = LocalToWorld(Vector(2,0,0),Angle(0,0,0),tr.HitPos,tr.HitNormal:Angle())
+		ent:SetPos(pos)
+		ent:SetAngles(ang)
+		ent:Spawn()
+		ent.owner = self.lastowner
+
+		ent.cons2 = constraint.Weld(ent,tr.Entity,0,tr.PhysicsBone or 0,200,true,false)
+		
+		self.lovushka = ent
+		
+		self:SetNWBool("PlacedLOVUSHKA",true)
+	elseif IsValid(self.lovushka) then
+		local tr = hg.eyeTrace(ply)
+
+		local tr2 = {}
+		tr2.start = self.lovushka:GetPos()
+		tr2.endpos = tr.HitPos
+		tr2.filter = self.lovushka
+		local trace = util.TraceLine(tr2)
+
+		if trace.Hit then return end
+		
+		local len = tr.HitPos:Distance(self.lovushka:GetPos())
+		if len < 200 and len > 10 then
+			self.lovushka.ent = tr.Entity
+			self.lovushka.lpos = tr.Entity:WorldToLocal(tr.HitPos)
+			self.lovushka.origlen = tr.HitPos:Distance(self.lovushka:GetPos())
+			local cons = constraint.CreateKeyframeRope(tr.HitPos,0.05,"cable/cable2",nil,self.lovushka.ent,self.lovushka.lpos,tr.PhysicsBone,self.lovushka,vector_origin,0,
+			{
+				["Slack"] = 50,
+				["Collide with world"] = false,
+			})
+			local ent2 = ents.Create("prop_physics")
+			ent2:SetModel("models/props_combine/breendesk.mdl")
+			
+			ent2:SetMoveType(MOVETYPE_NONE)
+			ent2:SetSolid(SOLID_VPHYSICS)
+			ent2:Spawn()
+			local size = 1
+			local pos = self.lovushka:GetPos()
+			--local dir = (tr.HitPos - pos):GetNormalized() * 1
+			ent2:PhysicsInitConvex({
+				Vector( tr.HitPos[1], tr.HitPos[2], tr.HitPos[3] ),
+				Vector( tr.HitPos[1], tr.HitPos[2], tr.HitPos[3] + size ),
+				Vector( tr.HitPos[1] + size, tr.HitPos[2], tr.HitPos[3] ),
+				Vector( tr.HitPos[1] + size, tr.HitPos[2], tr.HitPos[3] + size ),
+				Vector( pos[1], pos[2], pos[3] ),
+				Vector( pos[1], pos[2], pos[3] + size ),
+				Vector( pos[1] + size, pos[2], pos[3] ),
+				Vector( pos[1] + size, pos[2], pos[3] + size ),
+			})			
+			ent2:EnableCustomCollisions( true )
+
+			local phys = ent2:GetPhysicsObject()
+			if IsValid(phys) then
+				phys:SetMass(1)
+			end
+
+			ent2.lovushka = self
+			ent2:SetNoDraw(true)
+			ent2:AddCallback("PhysicsCollide",function()
+				if IsValid(ent2.lovushka) then
+					ent2.lovushka:Arm(CurTime() - ent2.lovushka.timeToBoom + 1,Vector(0,0,0))
+				end
+				timer.Simple(0,function()
+					--ent2:Remove()
+				end)
+			end)
+			constraint.NoCollide(self.lovushka,ent2,0,0)
+			constraint.Weld(self.lovushka,ent2,0,0,0,true,false)
+			constraint.Weld(self.lovushka.ent,ent2,0,0,0,true,false)
+		
+			self.lovushka.ent2 = ent2
+			self.lovushka.cons = cons
+			ply:SelectWeapon("weapon_hands_sh")
+			self:Remove()
+		end
+	end
 end
