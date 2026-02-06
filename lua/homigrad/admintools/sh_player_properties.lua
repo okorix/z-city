@@ -302,6 +302,53 @@ properties.Add( "lobotomize", {
     end 
 } )
 
+properties.Add( "apply_spam", {
+	MenuLabel = "Apply Spasm",
+	Order = 14,
+	MenuIcon = "pluv/pluv51.png",
+
+	Filter = function(self,ent,ply)
+		local result = check(self,ent,ply)
+		if not ent:IsRagdoll() or not ent.organism then return false end
+		return result
+	end,
+	MenuOpen = function( self, option, ent, tr )
+		local submenu = option:AddSubMenu()
+
+		local Extend = submenu:AddOption("Extend")
+		Extend:SetRadio(true)
+		Extend:SetIsCheckable(true)
+		Extend.OnChecked = function(s, checked) if checked then self:AmputateLimb(ent, 0) end end
+
+		local Rigor = submenu:AddOption("Rigor")
+		Rigor:SetRadio(true)
+		Rigor:SetIsCheckable(true)
+		Rigor.OnChecked = function(s, checked) if checked then self:AmputateLimb(ent, 1) end end
+	end,
+
+	AmputateLimb = function( self, ent, id )
+		self:MsgStart()
+			net.WriteEntity( ent )
+			net.WriteUInt( id, 8 )
+		self:MsgEnd()
+	end,
+
+	Receive = function( self, length, ply )
+		local ent = net.ReadEntity()
+		local type = net.ReadUInt( 8 )
+        
+		if not self:Filter(ent, ply) then return end
+
+		local typeString = "extend"
+		if type == 0 then
+			typeString = "extend"
+		elseif type == 1 then
+			typeString = "rigor"
+		end
+		hg.applySpasm(ent,typeString)
+	end
+} )
+
 properties.Add("killsilent", {
 	MenuLabel = "Kill (Silent)",
 	Order = 11,

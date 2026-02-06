@@ -6,7 +6,7 @@ SWEP.PrintName = "Zero Point Energy Field Manipulator"
 SWEP.Instructions = "The Zero Point Energy Field Manipulator, commonly known as the Gravity Gun, is a tractor beam-type weapon designed for handling hazardous materials."
 SWEP.Category = "ZCity Other"
 SWEP.Spawnable = true
-SWEP.AdminOnly = false
+SWEP.AdminOnly = true
 SWEP.Slot = 1
 
 SWEP.Weight = 0
