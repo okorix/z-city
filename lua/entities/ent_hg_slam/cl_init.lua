@@ -12,18 +12,26 @@ local laserMaterial = CreateMaterial("tripmine_laser", "UnlitGeneric", {
 
 function ENT:CreateLaserHook()
 	self.HookAdded = true
-	hook.Add("PostDrawOpaqueRenderables","SlamRender"..self:EntIndex(),function() -- a crutch cuz draw is not being called if entity is not in player view
+	hook.Add("PostDrawOpaqueRenderables", "SlamRender"..self:EntIndex(), function()
 		if not self.TraceStart or not self.TraceHitPos then return end
-
+		
 		render.SetMaterial(laserMaterial)
-		render.DrawBeam(
-			self.TraceStart,
-			self.TraceHitPos,
-			0.35,
-			0,
-			1,
-			Color(255, 55, 52, 64)
-		)
+		
+		local segments = 10
+		
+		for i = 1, segments do
+			local segStart = LerpVector((i - 1) / segments, self.TraceStart, self.TraceHitPos)
+			local segEnd = LerpVector(i / segments, self.TraceStart, self.TraceHitPos)
+			
+			render.DrawBeam(
+				segStart,
+				segEnd,
+				0.35,
+				0,
+				1,
+				Color(255, 55, 52, 64 - i * 6)
+			)
+		end
 	end)
 end
 
@@ -32,5 +40,5 @@ function ENT:Draw()
 end
 
 function ENT:OnRemove()
-	hook.Remove("PostDrawOpaqueRenderables","SlaMRender"..self:EntIndex())
+	hook.Remove("PostDrawOpaqueRenderables","SlamRender"..self:EntIndex())
 end
