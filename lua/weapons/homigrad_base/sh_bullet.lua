@@ -260,6 +260,7 @@ local ipairs, ents = ipairs, ents
 local ents_FindInSphere = ents.FindInSphere
 local vectorup = Vector(0, 0, 75)
 local function gasInertia(pos, force)
+	if force >= 150 then return end
 	for _, ent in ipairs(ents_FindInSphere(pos, force)) do
 		if IsValid(ent) and not ent:IsNPC() and not ent:IsPlayer() then
 			local phys = ent:GetPhysicsObject()
