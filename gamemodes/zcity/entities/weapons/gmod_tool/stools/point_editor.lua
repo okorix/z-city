@@ -210,10 +210,7 @@ function TOOL:DrawToolScreen(width, height)
 	draw.SimpleText("#PLUVERS", "ZB_ScrappersMedium", width / 2, height / 2, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 
 	local ply = self:GetOwner()
-	if point_editor == nil then
-		point_editor = GetConVar("point_editor_point")
-	end
-	if ply:GetInfo("point_editor_point") == "" then return end
-	
+	if ply:GetInfo("point_editor_point") == "" or !point_editor then return end
+
 	draw.SimpleText(point_editor:GetString(), "ZB_ScrappersSmall", width / 2, height * 0.7, zb.Points[point_editor:GetString()].Color or color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 end
