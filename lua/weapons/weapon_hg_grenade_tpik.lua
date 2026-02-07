@@ -550,7 +550,10 @@ function SWEP:SetTrap()
 		ent:SetPos(pos)
 		ent:SetAngles(ang)
 		ent:Spawn()
+		ent.team = ply:Team()
+		ent.steamid = ply:SteamID()
 		ent.owner = self.lastowner
+		ent.owner2 = self.lastowner
 
 		ent.cons2 = constraint.Weld(ent,tr.Entity,0,tr.PhysicsBone or 0,200,true,false)
 		
