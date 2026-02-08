@@ -455,7 +455,7 @@ local function PossessNPC(ply, npc)
         ply.noSound = true
         
         local inv = ply:GetNetVar("Inventory")
-        if inv then
+        if inv and not isCombine then
             inv["Weapons"] = inv["Weapons"] or {}
             inv["Weapons"]["hg_sling"] = true
             inv["Weapons"]["hg_flashlight"] = true

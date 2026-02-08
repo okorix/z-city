@@ -150,6 +150,14 @@ function CLASS.On(self, data)
     self.armors["head"] = "metrocop_helmet"
     self:SyncArmor()
 
+    local inv = self:GetNetVar("Inventory")
+    if inv then
+        inv["Weapons"] = inv["Weapons"] or {}
+        inv["Weapons"]["hg_sling"] = true
+        inv["Weapons"]["hg_flashlight"] = true
+        self:SetNetVar("Inventory", inv)
+    end
+
     if not data.bNoEquipment then
         giveSubClassLoadout(self, sub)
     end
