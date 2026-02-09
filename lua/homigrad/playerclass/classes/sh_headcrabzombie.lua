@@ -101,16 +101,23 @@ function CLASS.On(self)
 		end
 
 		local index = self:EntIndex()
-		hook.Add("OnEntityCreated", "relation_shipdo"..index, function(ent)
-			if not IsValid(self) then hook.Remove("OnEntityCreated","relation_shipdo"..index) return end
+		hook.Add("OnEntityCreated", "relation_shipdo" .. index, function(ent)
+			if not IsValid(self) or self.PlayerClassName ~= "headcrabzombie" then hook.Remove("OnEntityCreated","relation_shipdo" .. index) return end
 			if ent:IsNPC() then
 				if table.HasValue(rebels, ent:GetClass()) or table.HasValue(combines, ent:GetClass()) then
-					v:AddEntityRelationship(self, D_HT, 99)
+					ent:AddEntityRelationship(self, D_HT, 99)
 				elseif table.HasValue(zombies, ent:GetClass()) then
-					v:AddEntityRelationship(self, D_LI, 99)
+					ent:AddEntityRelationship(self, D_LI, 99)
 				end
 			end
 		end)
+
+		if self:HasWeapon("weapon_hands_sh") then
+			self:SelectWeapon("weapon_hands_sh")
+		else
+			local hands = self:Give("weapon_hands_sh")
+			self:SelectWeapon(hands)
+		end
 	end
 end
 
@@ -177,12 +184,12 @@ function CLASS.Think(self)
 
 	--\\ Only hands will be active..
 	local wep = self:GetActiveWeapon()
-	if IsValid(wep) and wep:GetClass() ~= "weapon_hands_sh" then
+	if IsValid(wep) and wep ~= NULL and wep:GetClass() ~= "weapon_hands_sh" then
 		if self:HasWeapon("weapon_hands_sh") then
 			self:SelectWeapon("weapon_hands_sh")
 		else
-			self:Give("weapon_hands_sh")
-			self:SelectWeapon("weapon_hands_sh")
+			local hands = self:Give("weapon_hands_sh")
+			self:SelectWeapon(hands)
 		end
 	end
 
@@ -285,7 +292,7 @@ end)
 
 --// Can't pickup weapons and use doors
 hook.Add("PlayerCanPickupWeapon", "ZombCantPickup", function(ply, ent)
-	if IsValid(ply) and ply.PlayerClassName == "headcrabzombie" then
+	if IsValid(ply) and ply.PlayerClassName == "headcrabzombie" and ent:GetClass() ~= "weapon_hands_sh" then
 		return false
 	end
 end)
@@ -402,6 +409,7 @@ else
 
 				ang:RotateAroundAxis(ang:Up(), -90)
 				ang:RotateAroundAxis(ang:Forward(), 100)
+
 				mdl:SetRenderOrigin(view.origin + ang:Forward() * vecAdjust.x + ang:Right() * vecAdjust.y + ang:Up() * vecAdjust.z)
 				mdl:SetRenderAngles(ang)
 				mdl2:SetRenderOrigin(view.origin + ang:Forward() * vecAdjust.x + ang:Right() * vecAdjust.y + ang:Up() * vecAdjust.z)
@@ -444,10 +452,8 @@ else
 	end
 
 	hook.Add("Post Pre Post Processing", "ZombDrawHeadcrab", function()
-		if lply.PlayerClassName == "headcrabzombie" and lply:Alive() then
-			cam.IgnoreZ(true)
-				DrawHeadcrab(lply, "models/nova/w_headcrab.mdl", vector_origin, -50)
-			cam.IgnoreZ(false)
+		if lply.PlayerClassName == "headcrabzombie" and lply:Alive() and lply.organism and not lply.organism.otrub then
+			DrawHeadcrab(lply, "models/nova/w_headcrab.mdl", vector_origin, -50)
 		end
 	end)
 
