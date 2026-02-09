@@ -231,8 +231,6 @@ end
 function GM:PlayerDisconnected()
 end
 
-RunConsoleCommand("mp_show_voice_icons", "0")
-
 local hullscale = Vector(1, 1, 1)
 
 util.AddNetworkString("ZB_ChooseSpecPly")

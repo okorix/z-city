@@ -100,4 +100,9 @@ if game.SinglePlayer() then
 		MsgC(Color(255, 0, 0), "WARNING: Game started in singleplayer! Z-City may not work properly until you start multiplayer game!\n")
 	end
 end
-RunConsoleCommand("zbase_popup","0")
+if CLIENT then
+	RunConsoleCommand("zbase_popup","0")
+end
+if SERVER then
+	RunConsoleCommand("mp_show_voice_icons", "0")
+end
