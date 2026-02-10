@@ -3,7 +3,7 @@ SWEP.Base = "weapon_melee"
 SWEP.PrintName = "Crowbar"
 SWEP.Instructions = "'I think you dropped this back in Black Mesa!'"
 SWEP.Category = "Weapons - Melee"
-SWEP.Spawnable = false
+SWEP.Spawnable = true
 SWEP.AdminOnly = false
 
 SWEP.WorldModel = "models/weapons/tfa_nmrih/w_me_crowbar.mdl"
