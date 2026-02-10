@@ -527,12 +527,6 @@ function SWEP:PrimaryAttack()
 	self.Thrower = self:GetOwner()
 end
 
-local CantPlaceTraps = {
-	"weapon_hg_molotov_tpik",
-	"weapon_hg_pipebomb_tpik",
-	"weapon_hg_smokenade_tpik"
-}
-
 function SWEP:Reload()
 	if self:GetOwner():KeyPressed(IN_RELOAD) and not self.ReadyToThrow and not self.InThrowing then
         self:SetTrap()
@@ -540,10 +534,8 @@ function SWEP:Reload()
 end
 
 function SWEP:SetTrap()
-	if table.HasValue(CantPlaceTraps,self:GetClass()) then return end
 	if self.NoTrap or self.ReadyToThrow then return end
 	if self.CoolDown > CurTime() then return end
-	if self.NoTrap then return end
 	local time = CurTime()
 	if IsValid(self:GetNWEntity("fakeGun")) then return end
 	if CLIENT then return end

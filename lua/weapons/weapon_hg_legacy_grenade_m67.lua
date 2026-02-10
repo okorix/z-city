@@ -2,8 +2,8 @@
 SWEP.Base = "weapon_hg_legacy_grenade"
 SWEP.PrintName = "M67"
 SWEP.Instructions = "M67 fragmentation grenade is used by many countries around the world since 1968. It has a pyrotechnic delay of 4-5.5 seconds."
-SWEP.Category = "Weapons - Explosive"
-SWEP.Spawnable = false
+SWEP.Category = "Weapons - Legacy explosives"
+SWEP.Spawnable = true
 SWEP.HoldType = "grenade"
 SWEP.ViewModel = ""
 SWEP.WorldModel = "models/weapons/tfa_ins2/w_m67.mdl"

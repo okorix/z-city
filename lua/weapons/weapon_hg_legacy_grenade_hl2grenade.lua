@@ -2,8 +2,8 @@
 SWEP.Base = "weapon_hg_legacy_grenade"
 SWEP.PrintName = "Combine Frag Grenade"
 SWEP.Instructions = "The Grenade comes equipped with a red blinking light and a chirping timer that are played when the grenade is thrown, letting both the attacker and the victim know when an active grenade is in their vicinity. Most Combine Soldiers carry at least a few of these and use them to flush out and/or kill enemies."
-SWEP.Category = "Weapons - Explosive"
-SWEP.Spawnable = false
+SWEP.Category = "Weapons - Legacy explosives"
+SWEP.Spawnable = true 
 SWEP.HoldType = "grenade"
 SWEP.ViewModel = ""
 SWEP.WorldModel = "models/Items/grenadeAmmo.mdl"

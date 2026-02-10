@@ -248,6 +248,7 @@ SWEP.spoon = false
 SWEP.throwsound = "weapons/molotov/handling/molotov_throw_burning.wav"
 
 SWEP.CoolDown = 0
+SWEP.NoTrap = true
 
 function SWEP:DrawPostPostModel()
 	if IsValid(self:GetWM()) and self.Burn and (!self.sparkThink or self.sparkThink < CurTime()) then

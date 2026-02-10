@@ -2,8 +2,8 @@
 SWEP.Base = "weapon_hg_legacy_grenade"
 SWEP.PrintName = "Flashbang"
 SWEP.Instructions = "Flashbang is a non-lethal stun device, used by SWAT."
-SWEP.Category = "Weapons - Explosive"
-SWEP.Spawnable = false
+SWEP.Category = "Weapons - Legacy explosives"
+SWEP.Spawnable = true
 SWEP.HoldType = "grenade"
 SWEP.ViewModel = ""
 SWEP.WorldModel = "models/jmod/explosives/grenades/flashbang/flashbang.mdl"

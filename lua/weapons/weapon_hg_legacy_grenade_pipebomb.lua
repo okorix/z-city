@@ -2,8 +2,8 @@
 SWEP.Base = "weapon_hg_legacy_grenade"
 SWEP.PrintName = "Pipe-Bomb"
 SWEP.Instructions = "A pipe-bomb is an explosive device made from a piece of pipe and an explosive. It has bolts inside that give it a fragmentation effect."
-SWEP.Category = "Weapons - Explosive"
-SWEP.Spawnable = false
+SWEP.Category = "Weapons - Legacy explosives"
+SWEP.Spawnable = true
 SWEP.HoldType = "grenade"
 SWEP.ViewModel = ""
 SWEP.WorldModel = "models/w_models/weapons/w_jj_pipebomb.mdl"

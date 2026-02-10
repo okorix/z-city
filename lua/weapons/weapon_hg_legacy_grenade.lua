@@ -2,7 +2,7 @@
 SWEP.PrintName = "F1"
 SWEP.Category = "Weapons - Explosive"
 SWEP.Instructions = "A famous soviet WWII offensive grenade. It's still widely exported and used to this day. It has a pyrotechnic delay of 3.2-4.2 seconds."
-SWEP.Spawnable = false
+SWEP.Spawnable = true
 SWEP.AdminOnly = false
 SWEP.Primary.ClipSize = -1
 SWEP.Primary.DefaultClip = -1
@@ -170,8 +170,8 @@ end
 function SWEP:PrimaryAttack()
 	local time = CurTime()
 	--time the throw!
-	self:GetOwner():SetAnimation(PLAYER_ATTACK1)
-	if SERVER and not self.removed then self:Throw(800, time) end
+	-- self:GetOwner():SetAnimation(PLAYER_ATTACK1)
+	-- if SERVER and not self.removed then self:Throw(800, time) end
 end
 if SERVER then
 	util.AddNetworkString("hg_started_attack")
@@ -184,6 +184,14 @@ else
 		net.ReadEntity().starthold = CurTime()
 	end)
 end
+
+local hook_Run = hook.Run
+hook.Add("Think", "homigrad-weaponsasdasd", function()
+	for _,wep in ipairs(hg.weapons2) do
+		if not IsValid(wep) or not wep.Step1 then table.RemoveByValue(hg.weapons2,wep) continue end
+		wep:Step1()
+	end
+end)
 
 local clr = Color(50, 40, 0)
 local function createSpoon(self,entownr)

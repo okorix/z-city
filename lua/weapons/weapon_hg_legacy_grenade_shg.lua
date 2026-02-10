@@ -2,8 +2,8 @@
 SWEP.Base = "weapon_hg_legacy_grenade"
 SWEP.PrintName = "Stielhandgranate"
 SWEP.Instructions = "A working replica of a WWII nazi-germany offensive grenade. It has a pyrotechnic delay of 5-8 seconds"
-SWEP.Category = "Weapons - Explosive"
-SWEP.Spawnable = false
+SWEP.Category = "Weapons - Legacy explosives"
+SWEP.Spawnable = true 
 SWEP.HoldType = "grenade"
 SWEP.ViewModel = ""
 SWEP.WorldModel = "models/jmod/explosives/grenades/sticknade/stick_grenade.mdl"
