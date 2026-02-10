@@ -927,7 +927,9 @@ if CLIENT then
 	function SWEP:DrawHUD()
 		if not IsValid(self:GetOwner()) then return end
 		local ammotype = hg.ammotypeshuy[self.Primary.Ammo].BulletSettings and hg.ammotypeshuy[self.Primary.Ammo].BulletSettings.Icon or matPistolAmmo
-		self.DrawAmmoMetods[self.AmmoDrawMetod](self,ammotype)
+		if ammotype then 
+			self.DrawAmmoMetods[self.AmmoDrawMetod](self,ammotype)
+		end
 		
 		self.isscoping = false
 		if self.attachments then
