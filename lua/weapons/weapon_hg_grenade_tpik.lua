@@ -31,8 +31,6 @@ SWEP.HoldType = "camera"
 SWEP.ViewModel = ""
 SWEP.WorkWithFake = true
 
-SWEP.Spoonsound = false --выставите в ручную на гранатах это... должно быть по сути на ргд, f1 и китайском аналоге ргд
-
 SWEP.WorldModel = "models/weapons/tfa_ins2/w_m67.mdl"
 SWEP.WorldModelReal = "models/weapons/zcity/c_m67.mdl"
 SWEP.WorldModelExchange = false
@@ -244,8 +242,11 @@ function SWEP:Throw(mul, time, nosound, throwPosAdjust, throwAngAdjust)
 	local entOwner = IsValid(owner.FakeRagdoll) and owner.FakeRagdoll or IsValid(owner) and owner
 	throwPosAdjust = throwPosAdjust or Vector(0,0,5)
 	throwAngAdjust = throwAngAdjust or Angle(0,0,0)
+	throwPosAdjust[2] = throwPosAdjust[2] + 2
+	local eyetr = self:GetEyeTrace()
+	local eyepos = eyetr and eyetr.StartPos or false
 	local ang = IsValid(entOwner) and owner:EyeAngles() or self:GetAngles()
-	local hand = IsValid(entOwner) and owner:EyePos() + ang:Forward() * throwPosAdjust[1] + ang:Right() * throwPosAdjust[2] + ang:Up() * throwPosAdjust[3] or self:GetPos()
+	local hand = eyepos and eyepos + ang:Forward() * throwPosAdjust[1] + ang:Right() * throwPosAdjust[2] + ang:Up() * throwPosAdjust[3] or self:GetPos()
 
 	if IsValid(entOwner) then
 		ent:SetOwner(entOwner or game.GetWorld())
@@ -465,16 +466,20 @@ function SWEP:CreateSpoon(entownr)
 		entasd:SetAngles(hand:GetAngles())
 		entasd:SetCollisionGroup(COLLISION_GROUP_WEAPON)
 		entasd:Spawn()
-
-		if self.Spoonsound then
-			entasd:EmitSound("m9/m9_fp.wav", 70, 150)
-		end
 		
 		entownr:EmitSound("weapons/m67/m67_spooneject.wav",65)
 
 		if self.SpoonSounds then
 			for k,v in ipairs(self.SpoonSounds) do
-				self:GetOwner():EmitSound(v[1],v[2])
+				self:GetOwner():EmitSound(v[1], v[2], v[3])
+
+				if v[4] then
+					local effectData = EffectData()
+					effectData:SetOrigin(entasd:GetPos())
+					effectData:SetScale(0.04)
+					effectData:SetEntity(entasd)
+					util.Effect("eff_jack_genericboom", effectData, true, true)
+				end
 			end
 		end
 
@@ -487,15 +492,19 @@ function SWEP:CreateSpoon(entownr)
 		entasd:SetCollisionGroup(COLLISION_GROUP_WEAPON)
 		entasd:Spawn()
 
-		if self.Spoonsound then
-			entasd:EmitSound("m9/m9_fp.wav", 70, 150)
-		end
-
 		entasd:EmitSound("weapons/m67/m67_spooneject.wav",65)
 
 		if self.SpoonSounds then
 			for k,v in ipairs(self.SpoonSounds) do
-				self:GetOwner():EmitSound(v[1],v[2])
+				self:GetOwner():EmitSound(v[1], v[2], v[3])
+
+				if v[4] then
+					local effectData = EffectData()
+					effectData:SetOrigin(entasd:GetPos())
+					effectData:SetScale(0.04)
+					effectData:SetEntity(entasd)
+					util.Effect("eff_jack_genericboom", effectData, true, true)
+				end
 			end
 		end
 
