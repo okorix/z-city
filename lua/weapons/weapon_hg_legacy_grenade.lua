@@ -1,6 +1,6 @@
 ﻿if SERVER then AddCSLuaFile() end
 SWEP.PrintName = "F1"
-SWEP.Category = "Weapons - Explosive"
+SWEP.Category = "Weapons - Legacy explosives"
 SWEP.Instructions = "A famous soviet WWII offensive grenade. It's still widely exported and used to this day. It has a pyrotechnic delay of 3.2-4.2 seconds."
 SWEP.Spawnable = true
 SWEP.AdminOnly = false
