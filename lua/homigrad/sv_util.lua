@@ -847,6 +847,151 @@ function hgBlastThatDoor(ent, vel) -- taken from JMod
 	end
 end
 
+function hg.CreateJeepSeats(ent)
+	local seatsDebug = false
+	timer.Simple(0.1, function()
+		if !IsValid(ent) then return end
+
+		local entang = ent:GetAngles()
+		local pos = ent:GetPos() + entang:Right() * 37 + entang:Forward() * 14 + entang:Up() * 18
+		local chair = ents.Create("prop_vehicle_prisoner_pod")
+		chair:SetModel("models/nova/jeep_seat.mdl")
+		chair:SetKeyValue( "limitview", 0 )
+		chair.shitass = true
+		chair:SetPos(pos)
+		chair:SetAngles(entang)
+		chair:SetColor4Part(255, 255, 255, 255)
+		chair:SetRenderMode(RENDERGROUP_TRANSLUCENT)
+		chair:SetCollisionGroup(COLLISION_GROUP_IN_VEHICLE)
+		chair:Spawn()
+		chair:SetVehicleEntryAnim(false)
+
+		local weld = constraint.Weld(chair, ent, 0, 0, 0, true, true)
+
+		local physobj = chair:GetPhysicsObject()
+		if physobj:IsValid() then
+			physobj:EnableCollisions(false)
+		end
+
+		local entang = ent:GetAngles()
+		local pos = ent:GetPos() + entang:Right() * 70 + entang:Up() * 75
+		local chair = ents.Create("prop_vehicle_prisoner_pod")
+		chair:SetModel("models/nova/airboat_seat.mdl")
+		chair:SetKeyValue( "limitview", 0 )
+		chair.shitass = true
+		chair:SetPos(pos)
+		chair:SetAngles(entang + Angle(0, 0, 0))
+		chair:SetColor4Part(255, 255, 255, seatsDebug and 255 or 0)
+		chair:SetRenderMode(RENDERGROUP_TRANSLUCENT)
+		chair:SetCollisionGroup(COLLISION_GROUP_IN_VEHICLE)
+		chair:Spawn()
+		chair:SetVehicleEntryAnim(false)
+
+		local weld = constraint.Weld( chair, ent, 0, 0, 0, true, true )
+
+		local physobj = chair:GetPhysicsObject()
+		if physobj:IsValid() then
+			physobj:EnableCollisions(false)
+		end
+
+		local entang = ent:GetAngles()
+		local pos = ent:GetPos() + entang:Right() * 90 + entang:Up() * 45 + entang:Forward() * 30
+		local chair = ents.Create("prop_vehicle_prisoner_pod")
+		chair:SetModel("models/nova/airboat_seat.mdl")
+		chair:SetKeyValue( "limitview", 0 )
+		chair.shitass = true
+		chair:SetPos(pos)
+		chair:SetAngles(entang+Angle(0,-90,0))
+		chair:SetColor4Part(255,255,255,seatsDebug and 255 or 0)
+		chair:SetRenderMode(RENDERGROUP_TRANSLUCENT)
+		chair:SetCollisionGroup(COLLISION_GROUP_IN_VEHICLE)
+		chair:Spawn()
+		chair:SetVehicleEntryAnim(false)
+
+		local weld = constraint.Weld(chair, ent, 0, 0, 0, true, true)
+
+		local physobj = chair:GetPhysicsObject()
+		if physobj:IsValid() then
+			physobj:EnableCollisions(false)
+		end
+
+		local entang = ent:GetAngles()
+		local pos = ent:GetPos() + entang:Right() * 90 + entang:Up() * 45 + entang:Forward() * -30
+		local chair = ents.Create("prop_vehicle_prisoner_pod")
+		chair:SetModel("models/nova/airboat_seat.mdl")
+		chair:SetKeyValue( "limitview", 0 )
+		chair.shitass = true
+		chair:SetPos(pos)
+		chair:SetAngles(entang + Angle(0, 90, 0))
+		chair:SetColor4Part(255, 255, 255, seatsDebug and 255 or 0)
+		chair:SetRenderMode(RENDERGROUP_TRANSLUCENT)
+		chair:SetCollisionGroup(COLLISION_GROUP_IN_VEHICLE)
+		chair:Spawn()
+		chair:SetVehicleEntryAnim(false)
+
+		local weld = constraint.Weld(chair, ent, 0, 0, 0, true, true)
+
+		local physobj = chair:GetPhysicsObject()
+		if physobj:IsValid() then
+			physobj:EnableCollisions(false)
+		end
+	end)
+end
+
+function hg.CreateAirboatSeats(ent)
+	local seatsDebug = false
+	timer.Simple(0, function()
+		if !IsValid(ent) then return end
+		ent:GetPhysicsObject():SetMass(ent:GetPhysicsObject():GetMass() * 2)
+		for i = 1, 4 do
+			local entang = ent:GetAngles()
+			local pos = ent:GetPos() + entang:Right() * 25 * i + entang:Forward() * 25 + entang:Up() * 20 + entang:Right() * -60
+			local chair = ents.Create("prop_vehicle_prisoner_pod")
+			chair:SetModel("models/nova/airboat_seat.mdl")
+			chair:SetKeyValue( "limitview", 0 )
+			chair.shitass = true
+			chair:SetPos(pos)
+			chair:SetAngles(entang + Angle(0, -80, 0))
+			chair:SetColor4Part(255, 255, 255, seatsDebug and 255 or 0)
+			chair:SetRenderMode(RENDERGROUP_TRANSLUCENT)
+			chair:SetCollisionGroup(COLLISION_GROUP_IN_VEHICLE)
+			chair:Spawn()
+			chair:SetVehicleEntryAnim(false)
+
+			local weld = constraint.Weld(chair, ent, 0, 0, 0, true, true)
+
+			local physobj = chair:GetPhysicsObject()
+			if physobj:IsValid() then
+				physobj:EnableCollisions(false)
+			end
+		end
+
+		for i = 1, 4 do
+			local entang = ent:GetAngles()
+			local pos = ent:GetPos() + entang:Right() * 25 * i + entang:Forward() * -25 + entang:Up() * 20 + entang:Right() * -60
+			local chair = ents.Create("prop_vehicle_prisoner_pod")
+			chair:SetModel("models/nova/airboat_seat.mdl")
+			chair:SetKeyValue( "limitview", 0 )
+			chair.shitass = true
+			chair:SetPos(pos)
+			chair:SetAngles(entang + Angle(0, 80, 0))
+			chair:SetColor4Part(255, 255, 255, seatsDebug and 255 or 0)
+			chair:SetRenderMode(RENDERGROUP_TRANSLUCENT)
+			chair:SetCollisionGroup(COLLISION_GROUP_IN_VEHICLE)
+			chair:Spawn()
+			chair:SetVehicleEntryAnim(false)
+
+			local weld = constraint.Weld(chair, ent, 0, 0, 0, true, true)
+
+			local physobj = chair:GetPhysicsObject()
+			if physobj:IsValid() then
+				physobj:EnableCollisions(false)
+				physobj:SetMass(1)
+			end
+		end
+	end)
+end
+
 hook.Add( "OnEntityCreated", "VechicleChairs", function( ent )
 	timer.Simple(0.1,function()
 		if IsValid(ent) and ent:IsVehicle() and ent.IsValidVehicle and ent:IsValidVehicle() then
@@ -871,146 +1016,7 @@ hook.Add( "OnEntityCreated", "VechicleChairs", function( ent )
 	end)
 	
 	if ent:GetClass() == "prop_vehicle_airboat" then
-		timer.Simple(0.1, function()
-			if !IsValid(ent) then return end
-			ent:GetPhysicsObject():SetMass(ent:GetPhysicsObject():GetMass() * 2)
-			for i = 1, 4 do
-				local entang = ent:GetAngles()
-				local pos = ent:GetPos() + entang:Right() * 25 * i + entang:Forward() * 25 + entang:Up() * 20 + entang:Right() * -60
-				local chair = ents.Create("prop_vehicle_prisoner_pod")
-				chair:SetModel("models/nova/airboat_seat.mdl")
-				chair:SetKeyValue( "limitview", 0 )
-				chair.shitass = true
-				chair:SetPos(pos)
-				chair:SetAngles(entang + Angle(0, -80, 0))
-				chair:SetColor4Part(0, 0, 0, 0)
-				chair:SetRenderMode(RENDERGROUP_TRANSLUCENT)
-				chair:SetCollisionGroup(COLLISION_GROUP_IN_VEHICLE)
-				chair:Spawn()
-				chair:SetVehicleEntryAnim(false)
-
-				local weld = constraint.Weld(chair, ent, 0, 0, 0, true, true)
-
-				local physobj = chair:GetPhysicsObject()
-				if physobj:IsValid() then
-					physobj:EnableCollisions(false)
-				end
-			end
-
-			for i = 1, 4 do
-				local entang = ent:GetAngles()
-				local pos = ent:GetPos() + entang:Right() * 25 * i + entang:Forward() * -25 + entang:Up() * 20 + entang:Right() * -60
-				local chair = ents.Create("prop_vehicle_prisoner_pod")
-				chair:SetModel("models/nova/airboat_seat.mdl")
-				chair:SetKeyValue( "limitview", 0 )
-				chair.shitass = true
-				chair:SetPos(pos)
-				chair:SetAngles(entang + Angle(0, 80, 0))
-				chair:SetColor4Part(0, 0, 0, 0)
-				chair:SetRenderMode(RENDERGROUP_TRANSLUCENT)
-				chair:SetCollisionGroup(COLLISION_GROUP_IN_VEHICLE)
-				chair:Spawn()
-				chair:SetVehicleEntryAnim(false)
-
-				local weld = constraint.Weld(chair, ent, 0, 0, 0, true, true)
-
-				local physobj = chair:GetPhysicsObject()
-				if physobj:IsValid() then
-					physobj:EnableCollisions(false)
-					physobj:SetMass(1)
-				end
-			end
-		end)
-	end
-
-	if ent:GetClass() == "prop_vehicle_jeep" then
-		timer.Simple(0, function()
-			if !IsValid(ent) then return end
-
-			local entang = ent:GetAngles()
-			local pos = ent:GetPos() + entang:Right() * 30 + entang:Forward() * 17 + entang:Up() * 25
-			local chair = ents.Create("prop_vehicle_prisoner_pod")
-			chair:SetModel("models/nova/airboat_seat.mdl")
-			chair:SetKeyValue( "limitview", 0 )
-			chair.shitass = true
-			chair:SetPos(pos)
-			chair:SetAngles(entang + Angle(0, 0, 25))
-			chair:SetColor4Part(255, 255, 255, 255)
-			chair:SetRenderMode(RENDERGROUP_TRANSLUCENT)
-			chair:SetCollisionGroup(COLLISION_GROUP_IN_VEHICLE)
-			chair:Spawn()
-			chair:SetVehicleEntryAnim(false)
-
-			local weld = constraint.Weld(chair, ent, 0, 0, 0, true, true)
-
-			local physobj = chair:GetPhysicsObject()
-			if physobj:IsValid() then
-				physobj:EnableCollisions(false)
-			end
-
-			local entang = ent:GetAngles()
-			local pos = ent:GetPos() + entang:Right() * 70 + entang:Up() * 75
-			local chair = ents.Create("prop_vehicle_prisoner_pod")
-			chair:SetModel("models/nova/airboat_seat.mdl")
-			chair:SetKeyValue( "limitview", 0 )
-			chair.shitass = true
-			chair:SetPos(pos)
-			chair:SetAngles(entang + Angle(0, 0, 0))
-			chair:SetColor4Part(255, 255, 255, 0)
-			chair:SetRenderMode(RENDERGROUP_TRANSLUCENT)
-			chair:SetCollisionGroup(COLLISION_GROUP_IN_VEHICLE)
-			chair:Spawn()
-			chair:SetVehicleEntryAnim(false)
-
-			local weld = constraint.Weld( chair, ent, 0, 0, 0, true, true )
-
-			local physobj = chair:GetPhysicsObject()
-			if physobj:IsValid() then
-				physobj:EnableCollisions(false)
-			end
-
-			local entang = ent:GetAngles()
-			local pos = ent:GetPos() + entang:Right() * 90 + entang:Up() * 45 + entang:Forward() * 30
-			local chair = ents.Create("prop_vehicle_prisoner_pod")
-			chair:SetModel("models/nova/airboat_seat.mdl")
-			chair:SetKeyValue( "limitview", 0 )
-			chair.shitass = true
-			chair:SetPos(pos)
-			chair:SetAngles(entang+Angle(0,-90,0))
-			chair:SetColor4Part(255,255,255,0)
-			chair:SetRenderMode(RENDERGROUP_TRANSLUCENT)
-			chair:SetCollisionGroup(COLLISION_GROUP_IN_VEHICLE)
-			chair:Spawn()
-			chair:SetVehicleEntryAnim(false)
-
-			local weld = constraint.Weld(chair, ent, 0, 0, 0, true, true)
-
-			local physobj = chair:GetPhysicsObject()
-			if physobj:IsValid() then
-				physobj:EnableCollisions(false)
-			end
-
-			local entang = ent:GetAngles()
-			local pos = ent:GetPos() + entang:Right() * 90 + entang:Up() * 45 + entang:Forward() * -30
-			local chair = ents.Create("prop_vehicle_prisoner_pod")
-			chair:SetModel("models/nova/airboat_seat.mdl")
-			chair:SetKeyValue( "limitview", 0 )
-			chair.shitass = true
-			chair:SetPos(pos)
-			chair:SetAngles(entang + Angle(0, 90, 0))
-			chair:SetColor4Part(255, 255, 255, 0)
-			chair:SetRenderMode(RENDERGROUP_TRANSLUCENT)
-			chair:SetCollisionGroup(COLLISION_GROUP_IN_VEHICLE)
-			chair:Spawn()
-			chair:SetVehicleEntryAnim(false)
-
-			local weld = constraint.Weld(chair, ent, 0, 0, 0, true, true)
-
-			local physobj = chair:GetPhysicsObject()
-			if physobj:IsValid() then
-				physobj:EnableCollisions(false)
-			end
-		end)
+		hg.CreateAirboatSeats(ent)
 	end
 end )
 
@@ -1743,23 +1749,32 @@ end)
 
 hook.Add("OnEntityCreated", "FunnySimfphys", function(ent)
 	if IsValid(ent) and ent:GetClass() == "prop_vehicle_jeep" then
-		timer.Simple(1, function()
+		timer.Simple(0, function()
 			if !IsValid(ent) then return end
 			local pos, ang = ent:GetPos(), ent:GetAngles()
 			pos = pos + vector_up * 10
 
-			if CurrentRound and CurrentRound().name == "coop" then
-				simfphys.SpawnVehicleSimple( "sim_fphys_jeep", pos, ang)
-			else
-				local glide = ents.Create("gtav_blazer")
-				glide:SetPos(pos)
-				ang:RotateAroundAxis(ang:Up(), 90)
-				glide:SetAngles(ang)
-				glide:Spawn()
-			end
-
 			SafeRemoveEntity(ent)
+			local ent2 = simfphys.SpawnVehicleSimple( "sim_fphys_jeep", pos, ang)
+			hg.CreateJeepSeats(ent2)
+			-- if CurrentRound and CurrentRound().name == "coop" then
+				-- simfphys.SpawnVehicleSimple( "sim_fphys_jeep", pos, ang)
+			-- else
+			-- 	local glide = ents.Create("gtav_blazer")
+			-- 	glide:SetPos(pos)
+			-- 	ang:RotateAroundAxis(ang:Up(), 90)
+			-- 	glide:SetAngles(ang)
+			-- 	glide:Spawn()
+			-- end
+
+			-- SafeRemoveEntity(ent)
 		end)
+	end
+end)
+
+hook.Add("PlayerSpawnedVehicle","FunnySimfphysPlayers",function(ply,ent)
+	if ent.VehicleName and ent.VehicleName == "sim_fphys_jeep" then
+		hg.CreateJeepSeats(ent)
 	end
 end)
 

@@ -890,6 +890,34 @@ function hg.RagdollOwner(ragdoll)
 	return IsValid(ply) and ply.FakeRagdoll == ragdoll and ply
 end
 
+function hg.RagdollCarDetach(ragdoll,ply,fast)
+	if ragdoll then
+		ply:SetCollisionGroup(COLLISION_GROUP_IN_VEHICLE)
+		--ply:SetSolidFlags(bit.bor(ply:GetSolidFlags(), FSOLID_NOT_SOLID, FSOLID_TRIGGER, FSOLID_USE_TRIGGER_BOUNDS))
+		ragdoll.removingwelds = true
+
+		if ragdoll.welds then
+			for i, weld in pairs(ragdoll.welds) do
+				if IsValid(weld) then weld:Remove() end
+			end
+		end
+		
+		ragdoll.welds = nil
+		ragdoll.removingwelds = nil
+		ragdoll:SetParent()
+
+		if fast then
+			ragdoll:GetPhysicsObject():ApplyForceCenter(ragdoll:GetVelocity():GetNormalized() * 10000)
+			ragdoll:GetPhysicsObject():ApplyForceCenter(vector_up * 10000)
+
+			--veh:EmitSound("zbattle/glass_shatter.ogg")
+		end
+	else
+		ply:SetCollisionGroup(COLLISION_GROUP_PLAYER)
+		--ply:SetSolidFlags(bit.band(ply:GetSolidFlags(), bit.bnot(FSOLID_NOT_SOLID), bit.bnot(FSOLID_TRIGGER), bit.bnot(FSOLID_USE_TRIGGER_BOUNDS)))
+	end
+end
+
 hook.Add("PlayerDisconnected", "hg-killniers", function(ply)
 	if ply:Alive() then
 		ply:Kill()
@@ -986,32 +1014,10 @@ hook.Add("PlayerLeaveVehicle","allowweapons",function(ply,veh)
 	local ragdoll = ply.FakeRagdoll
 	local fast = IsValid(ragdoll) and ragdoll:GetVelocity():Length() > 200
 	
-	if (!fast or ply.switchingseat) and ply:Alive() then
+	if (ply.switchingseat) and ply:Alive() then
 		hg.FakeUp(ply, true, ply.switchingseat)
 	else
-		if ragdoll then
-			ply:SetCollisionGroup(COLLISION_GROUP_IN_VEHICLE)
-			--ply:SetSolidFlags(bit.bor(ply:GetSolidFlags(), FSOLID_NOT_SOLID, FSOLID_TRIGGER, FSOLID_USE_TRIGGER_BOUNDS))
-			ragdoll.removingwelds = true
-
-			for i, weld in pairs(ragdoll.welds) do
-				if IsValid(weld) then weld:Remove() end
-			end
-			
-			ragdoll.welds = nil
-			ragdoll.removingwelds = nil
-			ragdoll:SetParent()
-
-			if fast then
-				ragdoll:GetPhysicsObject():ApplyForceCenter(ragdoll:GetVelocity():GetNormalized() * 10000)
-				ragdoll:GetPhysicsObject():ApplyForceCenter(vector_up * 10000)
-
-				--veh:EmitSound("zbattle/glass_shatter.ogg")
-			end
-		else
-			ply:SetCollisionGroup(COLLISION_GROUP_PLAYER)
-			--ply:SetSolidFlags(bit.band(ply:GetSolidFlags(), bit.bnot(FSOLID_NOT_SOLID), bit.bnot(FSOLID_TRIGGER), bit.bnot(FSOLID_USE_TRIGGER_BOUNDS)))
-		end
+		hg.RagdollCarDetach(ragdoll,ply,fast)
 	end
 
 	hg.fallfromveh = nil
