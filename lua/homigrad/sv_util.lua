@@ -865,7 +865,7 @@ hook.Add( "OnEntityCreated", "VechicleChairs", function( ent )
 				(ent:GetParent():GetModel() == "models/vehicle.mdl")
 			) and ent:GetParent().DriverSeat == ent
 			
-			-- ent:SetModel("models/props_junk/PopCan01a.mdl")
+			ent:SetModel("models/props_junk/PopCan01a.mdl")
 			ent:SetAngles(ent:LocalToWorldAngles(UwU and Angle(0, -1, 0) or Angle(0,90,0)))
 		end
 	end)
