@@ -1133,7 +1133,9 @@ if CLIENT then
 		self.visState = state
 
 		-- Update our animation as soon as possible for visual consistency
-		self:AnimationThink()
+		if self.AnimationThink then
+			self:AnimationThink()
+		end
 	end
 
 	--[[-------------------------------------------------------------------------

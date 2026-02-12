@@ -165,7 +165,7 @@ SWEP.ViewBobCamBone = "ValveBiped.Bip01_R_Hand"
 SWEP.ViewPunchDiv = 120
 
 SWEP.CallbackTimeAdjust = 0.1
-SWEP.NoTrap = false
+SWEP.NoTrap = true 
 
 function SWEP:Deploy( wep )
 	self:PlayAnim("deploy")
