@@ -2899,6 +2899,7 @@ local ScreenShakers = {} -- Shake your a... don't :3
 --]]
 function util.ScreenShake(vPos, nAmplitude, nFrequency, nDuration, nRadius, bAirshake, crfFilter)
 	if SERVER then -- SERVER SIDE
+		vPos = vPos or Vector(0,0,0)
 		nRadius = nRadius or (nAmplitude * 100)
 		local tEnts = ents.FindInSphere(vPos, nRadius * nRadius)
 		--PrintTable(tEnts)
