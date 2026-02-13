@@ -2561,7 +2561,7 @@ duplicator.Allow( "homigrad_base" )
 
 --\\ Custom running anim activity
 	hook.Add( "CalcMainActivity", "RunningAnim", function( Player, Velocity )
-		if (not Player:InVehicle()) and Player:IsOnGround() and Velocity:Length() > 250 and IsValid(Player:GetActiveWeapon()) and Player:GetActiveWeapon():GetClass() == "weapon_hands_sh" then
+		if (not Player:InVehicle()) and Player:IsOnGround() and Velocity:Length() > 250 and IsValid(Player:GetActiveWeapon()) and Player:GetActiveWeapon():GetHoldType() == "normal" then
 			local isFurry = Player.PlayerClassName == "furry"
 			local anim = ACT_HL2MP_RUN_FAST
 			if Player:IsOnFire() then
