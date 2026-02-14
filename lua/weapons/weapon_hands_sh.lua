@@ -904,7 +904,7 @@ function SWEP:ApplyForce()
 			end
 		end
 
-		if self.CarryEnt:GetClass() == "ent_hg_cyanide_canister" then
+		if self.CarryEnt:GetClass() == "ent_hg_cyanide_canister" and (zb and zb.modes) then
 			ply.Guilt = math.max(ply.Guilt, 5)
 		end
 
