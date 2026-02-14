@@ -392,7 +392,7 @@ hg.ConVars = hg.ConVars or {}
 		end
 
 		hook.Add("Think", "viewpunch_think", function(ply, cmd)
-			--if LocalPlayer():InVehicle() then return end
+			--if lply:InVehicle() then return end
 
 			local consmul = hg.CalculateConsciousnessMul()
 
@@ -452,14 +452,15 @@ hg.ConVars = hg.ConVars or {}
 				vp_punch_angle_velocity4 = Angle()
 			end
 
-			--if not LocalPlayer():Alive() then vp_punch_angle:Zero() vp_punch_angle_velocity:Zero() vp_punch_angle2:Zero() vp_punch_angle_velocity2:Zero() end
+			--if not lply:Alive() then vp_punch_angle:Zero() vp_punch_angle_velocity:Zero() vp_punch_angle2:Zero() vp_punch_angle_velocity2:Zero() end
 
 			local consmulrev = 1 - consmul
 			if vp_punch_angle:IsZero() and vp_punch_angle_velocity:IsZero() and vp_punch_angle2:IsZero() and vp_punch_angle_velocity2:IsZero() and vp_punch_angle3:IsZero() and vp_punch_angle_velocity3:IsZero() and  vp_punch_angle4:IsZero() and vp_punch_angle_velocity4:IsZero() then return end
 			local add = vp_punch_angle - vp_punch_angle_last + vp_punch_angle2 - vp_punch_angle_last2 + vp_punch_angle3 - vp_punch_angle_last3 + vp_punch_angle4 * consmulrev - vp_punch_angle_last4 * consmulrev
-			local ang = LocalPlayer():EyeAngles() + add
+			local ang = lply:EyeAngles() + add
+			lply.addvpangles = add
 
-			LocalPlayer():SetEyeAngles(ang)
+			lply:SetEyeAngles(ang)
 			vp_punch_angle_last = vp_punch_angle
 			vp_punch_angle_last2 = vp_punch_angle2
 			vp_punch_angle_last3 = vp_punch_angle3
@@ -1824,11 +1825,11 @@ local IsValid = IsValid
 		k = k * math.Clamp(consmul, 0.7, 1)
 		k = k * math.Clamp((org.temperature and (1 - (org.temperature - 38) * 0.25) or 1), 0.5, 1)
 		k = k * math.Clamp((org.temperature and ((org.temperature - 35) * 0.25 + 1) or 1), 0.5, 1)
-		k = k * math.Clamp((org.stamina and org.stamina[1] or 180) / 120, hg_movement_stamina_debuff:GetFloat(), 1)
+		k = k * math.Clamp(math.Round((org.stamina and org.stamina[1] or 180), 0) / 120, hg_movement_stamina_debuff:GetFloat(), 1)
 		k = k * math.Clamp(5 / ((org.immobilization or 0) + 1), 0.25, 1)
 		k = k * math.Clamp((org.blood or 0) / 5000, 0, 1)
 		k = k * math.Clamp(10 / ((org.shock or 0) + 1), 0.25, 1)
-		--k = k * (math.min((org.adrenaline or 0) / 24, 0.3) + 1)
+		k = k * (math.min(math.Round((org.adrenaline or 0), 1) / 24, 0.3) + 1)
 		k = k * math.Clamp((org.lleg and org.lleg >= 0.5 and math.max(1 - org.lleg, 0.6) or 1) * (org.lleg and org.rleg >= 0.5 and math.max(1 - org.rleg, 0.6) or 1) * ((org.analgesia * 1 + 1)), 0, 1)
 		k = k * (org.llegdislocation and 0.75 or 1) * (org.rlegdislocation and 0.75 or 1)
 		k = k * (org.pelvis == 1 and 0.4 or 1)
@@ -1948,7 +1949,11 @@ local IsValid = IsValid
 		if ply:GetMoveType() == MOVETYPE_LADDER or ply:GetMoveType() == MOVETYPE_NONE then
 			speed = 100
 		end
-
+		
+		if org.noradrenaline and org.noradrenaline > 0 then
+			speed = speed + 200 * math.Round(org.noradrenaline, 1)
+		end
+		
 		mv:SetMaxSpeed(speed)
 		mv:SetMaxClientSpeed(speed)
 		ply:SetMaxSpeed(speed)

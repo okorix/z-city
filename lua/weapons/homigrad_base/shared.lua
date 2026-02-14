@@ -1785,7 +1785,7 @@ function SWEP:GetAdditionalValues()
 	local suiciding = false--ply.suiciding
 	local huypitch = ((ply.suiciding and !IsValid(ply.FakeRagdoll)) or huya or (self:IsSprinting() or ((ply.posture == 4 or ply.posture == 3) and not self:IsZoom())))
 
-	self.pitch = Lerp(hg.lerpFrameTime(0.001,dtime), self.pitch, ply:GetNWFloat("InLegKick",0) > CurTime() and 0.5 or suiciding and 1 or huypitch and 0.65 or self.reload and 0.75 or 0)
+	self.pitch = Lerp(hg.lerpFrameTime(0.001,dtime), self.pitch, ply:GetNWFloat("InLegKick",0) > CurTime() and 0.5 or suiciding and 1 or huypitch and 0.65 or (self.reload and self.ReloadNoPitch) and 0.75 or 0)
 	
 	if not huypitch then
 		local torso = ply:LookupBone("ValveBiped.Bip01_Spine1")
@@ -2294,10 +2294,11 @@ function SWEP:CanRest()
 
 	if SERVER then
 		self:WorldModel_Transform()
-	end
-
+	end -- this shit needs to be changed
+	-- desiredPos differs on CLIENT and SERVER (drastically)
     local pos, ang = self.desiredPos, self:GetOwner():EyeAngles()--self:GetTrace(true, nil, nil, true)
-    local pos, _ = LocalToWorld(self.RestPosition + (self.BipodOffset or vector_origin), angle_zero, pos, ang)
+    
+	local pos, _ = LocalToWorld(self.RestPosition + (self.BipodOffset or vector_origin), angle_zero, pos, ang)
 	
     local tr = {}
     local vec = vector_up--ang:Up()
@@ -2345,21 +2346,27 @@ function SWEP:RestWeapon()
 	self:SetNWVector("EntPos", trace.HitPos)
 end
 
+function SWEP:GetBipodPosAng()
+	local restent = self:GetNWEntity("RestEntity")
+
+	local restbone = self:GetNWInt("RestPBone")
+	restbone = restbone == -1 and 0 or restbone
+
+	local mat = restent:IsWorld() and Matrix() or restent:GetBoneMatrix(restbone)
+
+	local posa, anga2 = mat:GetTranslation(), mat:GetAngles()
+
+	local _, anga = LocalToWorld(vector_origin, self:GetNWAngle("RestAng"), vector_origin, anga2)
+
+	return posa, anga, anga2
+end
+
 hook.Add("HG.InputMouseApply", "restrictMouseMovement", function(tbl)
     local wep = lply:GetActiveWeapon()
 
     if ishgweapon(wep) then
         if wep:IsResting() then
-			local restent = wep:GetNWEntity("RestEntity")
-
-            local restbone = wep:GetNWInt("RestPBone")
-            restbone = restbone == -1 and 0 or restbone
-
-            local mat = restent:IsWorld() and Matrix() or restent:GetBoneMatrix(restbone)
-
-            local posa, anga = mat:GetTranslation(), mat:GetAngles()
-
-			local _, anga = LocalToWorld(vector_origin, wep:GetNWAngle("RestAng"), vector_origin, mat:GetAngles())
+			local posa, anga = wep:GetBipodPosAng()
 
             local restrict_pitch1 = 15
             local restrict_pitch2 = 30
@@ -2396,15 +2403,8 @@ hook.Add("HG_MovementCalc_2", "moveWithWeapon", function(mul, ply, cmd, mv)
                 return
             end
 
-            local restbone = wep:GetNWInt("RestPBone")
-            restbone = restbone == -1 and 0 or restbone
+			local posa, ango, anga = wep:GetBipodPosAng()
 
-            local mat = restent:IsWorld() and Matrix() or restent:GetBoneMatrix(restbone)
-
-            local posa, anga = mat:GetTranslation(), mat:GetAngles()
-			
-			local _, ango = LocalToWorld(vector_origin, wep:GetNWAngle("RestAng"), vector_origin, anga)
-			
 			wep.ownerpos2 = wep:GetNWVector("OwnerPos") + ango:Right() * math.AngleDifference(ply:EyeAngles()[2], ango[2]) * 0.5 + ango:Forward() * (math.abs(math.AngleDifference(ply:EyeAngles()[2], ango[2])) * 0.2 - math.min(15, math.abs(math.AngleDifference(ply:EyeAngles()[1], ango[1]))) * 0.25)
 
             local restpos = LocalToWorld(wep:GetNWVector("RestPos"), angle_zero, posa, anga)
@@ -2419,12 +2419,13 @@ hook.Add("HG_MovementCalc_2", "moveWithWeapon", function(mul, ply, cmd, mv)
             mv:SetForwardSpeed((wep.ownerpos2 - ply:GetPos() + (restpos - wep:GetNWVector("EntPos"))):Dot(ply:EyeAngles():Forward()) * 10)
 			
 			if restpos[3] < ply:EyePos()[3] - 40 then
-				wep:SetNWBool("IsResting", false)
+				--mv:AddKey(IN_DUCK)
+				--wep:SetNWBool("IsResting", false)
 
-				return
+				--return
 			end
-
-            if ply:EyeAngles()[1] < -10 or restpos[3] < ply:EyePos()[3] - 40 then
+			
+            if ply:EyeAngles()[1] < -10 or restpos[3] < ply:GetPos()[3] + 30 - 10 then
                 mv:AddKey(IN_DUCK)
             else
                 mv:SetButtons(bit.band(mv:GetButtons(), bit.bnot(IN_DUCK)))
