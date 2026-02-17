@@ -1026,7 +1026,7 @@ hook.Add("EntityTakeDamage", "homigrad-damage", function(ent, dmgInfo)
 
 				rag.headexploded = true
 				org.headamputated = true
-
+				
 				org.dmgstack[hitgroup][1] = nil
 				org.dmgstack[hitgroup][2] = nil
 			end
@@ -1057,6 +1057,9 @@ hook.Add("EntityTakeDamage", "homigrad-damage", function(ent, dmgInfo)
 
 			org.dmgstack[hitgroup][1] = nil
 			org.dmgstack[hitgroup][2] = nil
+
+			org.owner.fullsend = true
+			hg.send_bareinfo(org)
 		end)
 	end)
 

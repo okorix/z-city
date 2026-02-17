@@ -79,7 +79,7 @@ SWEP.AmmoTypes2 = {
 		[2] = {"23x75 SH25"},
 		[3] = {"23x75 Barricade"},
 		[4] = {"23x75 Zvezda"},
-		[5] = {"23x75 Waver"}
+		[5] = {"23x75 Wave R"}
 	},
 	["20/70 gauge"] = {
 		[1] = {"20/70 gauge"},
@@ -1497,7 +1497,7 @@ SWEP.vecSuicidePist2 = Vector(-5,-5,3)
 SWEP.angSuicidePist2 = Angle(32,105,20)
 SWEP.vecSuicideRifle = Vector(2,-19,-1)
 SWEP.angSuicideRifle = Angle(15,100,90)
-SWEP.vecSuicideRifle2 = Vector(12, -20, 0)
+SWEP.vecSuicideRifle2 = Vector(14, -22, 0)
 SWEP.angSuicideRifle2 = Angle(14,118,90)
 local function isCrouching(ply)
 	return (hg.KeyDown(ply,IN_DUCK)) and ply:OnGround()
@@ -1920,6 +1920,7 @@ function SWEP:InUse()
 end
 
 local veczero = Vector(0, 0, 0)
+SWEP.anglefinger = Angle()
 function SWEP:SetHandPos(noset)
 	self.addvec = self.addvec or veczero
 	self.rhandik = self.setrhik
@@ -1962,6 +1963,9 @@ function SWEP:SetHandPos(noset)
 	ply.lhold = lhmat
 
 	if not rhmat or not lhmat then return end
+
+	local atk = hg.KeyDown(ply, IN_ATTACK)
+	self.anglefinger[2] = LerpFT(atk and 1 or 0.1, self.anglefinger[2], atk and 45 or 0)
 
 	if !should then
 		local vec1, ang1 = -(-self.handPos), -(-self.handAng)
@@ -2052,7 +2056,8 @@ function SWEP:SetHandPos(noset)
 			if !ply_bonematrix then continue end
 			
 			wm_bonematrix:SetTranslation(wm_bonematrix:GetTranslation() + (TPIKBonesLHDict[name] and addvec_fem or vector_origin))
-			
+			if name == "ValveBiped.Bip01_R_Finger12" then wm_bonematrix:SetAngles(wm_bonematrix:GetAngles() + self.anglefinger) end
+
 			--[[if ent.organism and ent.organism.rarmamputated then
 				local mirrormat = mdl:GetBoneMatrix(mdl:LookupBone("ValveBiped.Bip01_R_Hand"))
 				
@@ -2425,7 +2430,7 @@ hook.Add("HG_MovementCalc_2", "moveWithWeapon", function(mul, ply, cmd, mv)
 				--return
 			end
 			
-            if ply:EyeAngles()[1] < -10 or restpos[3] < ply:GetPos()[3] + 30 - 10 then
+            if ply:EyeAngles()[1] < -10 or restpos[3] < ply:GetPos()[3] + 40 - 10 then
                 mv:AddKey(IN_DUCK)
             else
                 mv:SetButtons(bit.band(mv:GetButtons(), bit.bnot(IN_DUCK)))
