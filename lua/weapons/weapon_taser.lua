@@ -154,7 +154,6 @@ function SWEP:Shoot(override)
             mask = MASK_SHOT
         } )
 		self:GetOwner():LagCompensation(false)
-
 		if tr.Entity then
             local ent = tr.Entity
 			
@@ -177,8 +176,8 @@ function SWEP:Shoot(override)
                 ply = hg.RagdollOwner(ent) or ent
             end
 
-			if ply:InVehicle() then
-				ply:ExitVehicle()
+			if ply:IsPlayer() and ply:InVehicle() then
+				hg.RagdollCarDetach(ent,ply,false)
 			end
 
 			local drugged = ply.organism and ply.organism.analgesia > 0.5
