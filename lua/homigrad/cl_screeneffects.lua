@@ -606,7 +606,8 @@ hook.Add("Post Post Processing", "ItHurts", function()
 		show_image_time = 0
 		lobotomy_index = 0
 	end
-	
+	hook.Run("Post Post Pre Post Processing")
+
 	if O2Lerp > 1 then
 		render.UpdateScreenEffectTexture()
 		

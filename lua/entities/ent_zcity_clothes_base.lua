@@ -40,10 +40,10 @@ function ENT:Draw()
 
     local pos, ang = LocalToWorld(self.NamePos * self:GetModelScale(), self.NameAng, self:GetPos(), self:GetAngles())
     cam.Start3D2D(pos,ang, 0.10 * self:GetModelScale())
-		local light1 = render.ComputeLighting(pos, ang:Up() * 1)
-		local light2 = render.ComputeDynamicLighting(pos, ang:Up() * 1)
+        local light1 = render.ComputeLighting(pos, ang:Up() * 1)
+        local light2 = render.ComputeDynamicLighting(pos, ang:Up() * 1)
 
-		local light = (light1 + light2) * 2
+        local light = (light1 + light2) * 2
         textcolor.r = 255 * light[1]
         textcolor.g = 55 * light[2]
         textcolor.b = 55 * light[3]
