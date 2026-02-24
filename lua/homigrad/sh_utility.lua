@@ -2494,8 +2494,8 @@ local IsValid = IsValid
 			if PhysObj and PhysObj.GetMass and PhysObj:GetMass() > 14 then return false end
 		end
 
-		if IsValid(ply.FakeRagdoll) then return false end
-		if ply.PickUpCooldown > CurTime() then return false end
+		--if IsValid(ply.FakeRagdoll) then return false end
+		if ply.PickUpCooldown > CurTime() and not IsValid(ply.FakeRagdoll) then return false end
 
 		ply.PickUpCooldown = CurTime() + 0.15
 	end)
