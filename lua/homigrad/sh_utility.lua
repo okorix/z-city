@@ -1001,7 +1001,7 @@ local IsValid = IsValid
 		if !self.shouldTransmit then return end
 
 		ent = IsValid(ent) and ent or self
-
+		if ent:GetMaterial() == "NULL" then ent:DrawShadow( false ) return end
 		if not IsValid(ent) then return end
 
 		--local drawornot = hook_Run("PreDrawPlayer2", ent, self) // true means nodraw
@@ -2601,15 +2601,16 @@ duplicator.Allow( "homigrad_base" )
 		["grenade"] = true
 	}
 
-	hook.Add( "CalcMainActivity", "RunningAnim", function( Player, Velocity )
-		local wep = IsValid(Player:GetActiveWeapon()) and Player:GetActiveWeapon()
-		if (not Player:InVehicle()) and Player:IsOnGround() and Velocity:Length() > 250 and wep and runHoldTypes[wep:GetHoldType()] then
-			local isFurry = Player.PlayerClassName == "furry"
+	hook.Add( "CalcMainActivity", "RunningAnim", function(ply, vel)
+		local wep = IsValid(ply:GetActiveWeapon()) and ply:GetActiveWeapon()
+		local isAmputated = ply:IsBerserk() and ply.organism and (ply.organism.llegamputated or ply.organism.rlegamputated)
+		if (not ply:InVehicle()) and ply:IsOnGround() and vel:Length() > 250 and wep and runHoldTypes[wep:GetHoldType()] and not isAmputated then
+			local isFurry = ply.PlayerClassName == "furry"
 			local anim = ACT_HL2MP_RUN_FAST
-			if Player:IsOnFire() then
+			if ply:IsOnFire() then
 				anim = ACT_HL2MP_RUN_PANICKED
 			elseif isFurry then
-				if hg.KeyDown(Player, IN_WALK) and not hg.KeyDown(Player, IN_BACK) then
+				if hg.KeyDown(ply, IN_WALK) and not hg.KeyDown(ply, IN_BACK) then
 					anim = ACT_HL2MP_RUN_ZOMBIE_FAST
 				else
 					anim = ACT_HL2MP_RUN_FAST
@@ -2618,6 +2619,14 @@ duplicator.Allow( "homigrad_base" )
 				anim = ACT_HL2MP_RUN_FAST
 			end
 
+			return anim, -1
+		end
+
+		if (not ply:InVehicle()) and ply:IsOnGround() and isAmputated then
+			local anim = ACT_HL2MP_WALK_ZOMBIE_06
+			if vel:Length() > 250 then
+				anim = ACT_HL2MP_RUN_ZOMBIE_FAST
+			end
 			return anim, -1
 		end
 	end)
