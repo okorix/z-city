@@ -391,7 +391,20 @@ hg.ConVars = hg.ConVars or {}
 			return math.Clamp(((consciousness - 1) * 3 + 1), 0.4, 1)
 		end
 
-		hook.Add("Think", "viewpunch_think", function(ply, cmd)
+		function hg.InGame()
+			local x, y = input.GetCursorPos()
+
+			return !(vgui.CursorVisible() or (x == 0 and y == 0))
+		end
+
+		hook.Add("Think", "vp_think", function()
+			if IsValid(lply.FakeRagdoll) and hg.InGame() then return end
+			
+			hook.Run("ViewpunchThink")
+		end)
+
+		local lastplyroll
+		hook.Add("ViewpunchThink", "viewpunch_think", function(tblang)
 			--if lply:InVehicle() then return end
 
 			local consmul = hg.CalculateConsciousnessMul()
@@ -457,10 +470,22 @@ hg.ConVars = hg.ConVars or {}
 			local consmulrev = 1 - consmul
 			if vp_punch_angle:IsZero() and vp_punch_angle_velocity:IsZero() and vp_punch_angle2:IsZero() and vp_punch_angle_velocity2:IsZero() and vp_punch_angle3:IsZero() and vp_punch_angle_velocity3:IsZero() and  vp_punch_angle4:IsZero() and vp_punch_angle_velocity4:IsZero() then return end
 			local add = vp_punch_angle - vp_punch_angle_last + vp_punch_angle2 - vp_punch_angle_last2 + vp_punch_angle3 - vp_punch_angle_last3 + vp_punch_angle4 * consmulrev - vp_punch_angle_last4 * consmulrev
-			local ang = lply:EyeAngles() + add
-			lply.addvpangles = add
-
+			if lply.organism and lply.organism.otrub then add:Zero() end
+			
+			if hg.InGame() then
+				lastplyroll = lply:EyeAngles()[3]
+			end
+			
+			local angs = lply:EyeAngles()
+			angs[3] = lastplyroll or angs[3]
+			
+			local ang = angs + add
+			
 			lply:SetEyeAngles(ang)
+			if tblang then
+				tblang.angle = tblang.angle + add
+				tblang.vpangle = add
+			end
 			vp_punch_angle_last = vp_punch_angle
 			vp_punch_angle_last2 = vp_punch_angle2
 			vp_punch_angle_last3 = vp_punch_angle3
@@ -889,6 +914,7 @@ local IsValid = IsValid
 	
 	local hg_firstperson_ragdoll = ConVarExists("hg_firstperson_ragdoll") and GetConVar("hg_firstperson_ragdoll") or CreateConVar("hg_firstperson_ragdoll", "0", FCVAR_ARCHIVE, "Toggle first-person ragdoll camera view", 0, 1) --!! unused??
 	local hg_firstperson_death = ConVarExists("hg_firstperson_death") and GetConVar("hg_firstperson_death") or CreateClientConVar("hg_firstperson_death", "0", true, false, "Toggle first-person death camera view", 0, 1)
+	local hg_thirdperson = ConVarExists("hg_thirdperson") and GetConVar("hg_thirdperson") or CreateConVar("hg_thirdperson", 0, FCVAR_REPLICATED, "Toggle third-person camera view", 0, 1)
 	local hg_gopro = ConVarExists("hg_gopro") and GetConVar("hg_gopro") or CreateClientConVar("hg_gopro", "0", true, false, "Toggle GoPro-like camera view", 0, 1)
 	local hg_deathfadeout = CreateClientConVar("hg_deathfadeout", "1", true, true, "Toggle screen fade and sound mute on death", 0, 1)
 
@@ -952,7 +978,7 @@ local IsValid = IsValid
 			--ent:ManipulateBoneScale(lkp, wawanted)
 			local mat = ent:GetBoneMatrix(lkp)
 			
-			if (!hg_gopro:GetBool() and (ent == ply or (!hg_ragdollcombat:GetBool() or hg_firstperson_ragdoll:GetBool()))) or (hg_firstperson_death:GetBool() and follow == ent) then
+			if (!hg_thirdperson:GetBool() and !hg_gopro:GetBool() and (ent == ply or (!hg_ragdollcombat:GetBool() or hg_firstperson_ragdoll:GetBool()))) or (hg_firstperson_death:GetBool() and follow == ent) then
 				mat:SetScale(wawanted)
 			end
 			--angfuck[3] = -GetViewPunchAngles2()[2] - GetViewPunchAngles3()[2]
@@ -2137,6 +2163,7 @@ local IsValid = IsValid
 
 	hook.Add("CreateEntityRagdoll", "npcloot", function(ent, rag)
 		local loot = lootNPCs[ent:GetClass()]
+		rag:SetCollisionGroup(COLLISION_GROUP_WEAPON)
 		if IsValid(ent) and IsValid(rag) and ent:IsNPC() and loot then
 			rag.inventory = {}
 			rag.inventory.Weapons = {}
@@ -2825,9 +2852,7 @@ duplicator.Allow( "homigrad_base" )
     --Small Fireworks
     game.AddParticles( "particles/gf2_firework_small_01.pcf" )
 --//
---\\ Fun commands
-	local hg_thirdperson = ConVarExists("hg_thirdperson") and GetConVar("hg_thirdperson") or CreateConVar("hg_thirdperson", 0, FCVAR_REPLICATED, "Toggle third-person camera view", 0, 1)
---//
+
 --\\ Explosion Trace
 	function hg.ExplosionTrace(start,endpos,filter)
 		local filter1 = {}

@@ -136,37 +136,6 @@ properties.Add( "fullstrip", {
 	end 
 } )
 
-properties.Add( "setplayerclass", {
-	MenuLabel = "Set player class", -- Name to display on the context menu
-	Order = 2, -- The order to display this property relative to other properties
-	MenuIcon = "icon64/playermodel.png", -- The icon to display next to the property
-
-	Filter = check,
-	Action = function( self, ent ) -- The action to perform upon using the property ( Clientside )
-        Derma_StringRequest(
-            "Give "..ent:GetPlayerName(), 
-            "Write a class name",
-            "",
-            function(text) 
-                self:MsgStart()
-                    net.WriteEntity( ent )
-                    net.WriteString( text )
-                self:MsgEnd()
-            end
-        )
-
-	end,
-	Receive = function( self, length, ply ) -- The action to perform upon using the property ( Serverside )
-		local ent = net.ReadEntity()
-        local text = net.ReadString()
-		--if ( !properties.CanBeTargeted( ent, ply ) ) then return end
-		if ( !self:Filter( ent, ply ) ) then return end
-        ent = hg.RagdollOwner( ent ) or ent
-
-        ent:SetPlayerClass(text)
-	end 
-} )
-
 properties.Add( "reset_org", {
 	MenuLabel = "Reset organism", -- Name to display on the context menu
 	Order = 5, -- The order to display this property relative to other properties
@@ -433,6 +402,47 @@ properties.Add("removeply", {
 		ent:Remove()
 	end 
 })
+
+properties.Add( "setplayerclass", {
+	MenuLabel = "Set player class", -- Name to display on the context menu
+	Order = 15, -- The order to display this property relative to other properties
+	MenuIcon = "vgui/entities/npc_nukude_proto_h", -- The icon to display next to the property
+
+	Filter = check,
+	Action = function( self, ent ) -- The action to perform upon using the property ( Clientside )
+		self:MsgStart()
+			net.WriteEntity( ent )
+		self:MsgEnd()
+	end,
+	PlayerClass = function( self, ent, name )
+		self:MsgStart()
+			net.WriteEntity( ent )
+			net.WriteString( name )
+		self:MsgEnd()
+	end,
+	Receive = function( self, length, ply )
+		local ent = net.ReadEntity()
+		local class = net.ReadString( )
+
+		ent = hg.RagdollOwner(ent) or hg.GetCurrentCharacter(ent) or ent
+		if IsValid(ent) and ent:IsPlayer() and player.classList[class] then
+			ent:SetPlayerClass(class)
+		end
+	end,
+	MenuOpen = function( self, option, ent, tr )
+		local submenu = option:AddSubMenu()
+
+		for name, tbl in pairs(player.classList) do
+			local opt = submenu:AddOption(name)
+			opt:SetRadio(true)
+			opt:SetChecked(ent.PlayerClassName == name)
+			opt:SetIsCheckable(true)
+			opt.OnChecked = function(s, checked)
+				self:PlayerClass(ent, name)
+			end	
+		end
+	end
+} )
 
 properties.Add( "break_limb", {
 	MenuLabel = "Break Limb",

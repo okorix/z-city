@@ -355,7 +355,7 @@ local hg_potatopc
 local old = false
 local tinnitusSoundFactor
 local lerpblood = 0
-hook.Add("RenderScreenspaceEffects", "organism-effects", function()
+hook.Add("Post Post Pre Post Processing", "organism-effects", function()
 	local spect = IsValid(lply:GetNWEntity("spect")) and lply:GetNWEntity("spect")
 	local organism = lply:Alive() and lply.organism or (viewmode == 1 and IsValid(spect) and spect.organism) or {}
 	local new_organism = lply:Alive() and lply.new_organism or (viewmode == 1 and IsValid(spect) and spect.new_organism) or {}
@@ -716,7 +716,7 @@ hook.Add("Player-Ragdoll think", "organism-think-client-blood", function(ply, en
 	if org and org.pulse and org.o2 and org.o2[1] then
 		local pulse = org.heartbeat
 		ent.pulsethink = ent.pulsethink or 0
-		local speed = math.Clamp(org.heartbeat / 60, 1, 120) * (0.4 / math.max(org.o2.curregen, 0.3)) * 0.5 * (org.o2[1] < 8 and 0 or 1)
+		local speed = math.Clamp(org.heartbeat / 60, 1, 4) * (0.4 / math.max(org.o2.curregen, 0.3)) * 0.5 * (org.o2[1] < 8 and 0 or 1)
 		ent.pulsethink = ent.pulsethink + (org.heartbeat > 1 and 1 or 0) * (org.holdingbreath and 0 or 1) * FrameTime() * 4 * (speed) * (org.lungsfunction and 1 or 0)
 
 		local torso = ent:LookupBone("ValveBiped.Bip01_Spine2")
@@ -742,7 +742,7 @@ hook.Add("Player-Ragdoll think", "organism-think-client-blood", function(ply, en
 				org.breathed = true
 				local heartbeat = org.heartbeat or 0
 				local muffed
-				local pitch = math.Clamp(heartbeat / 250 * 100, 90, 120) * math.Clamp((org.stamina and org.stamina[1] and (1 + (1 - org.stamina[1] / 180) * 0.2) or 1), 1, 1.2)
+				local pitch = math.Clamp(heartbeat / 200 * 100, 90, 120) * math.Clamp((org.stamina and org.stamina[1] and (1 + (1 - org.stamina[1] / 180) * 0.2) or 1), 1, 1.2)
 
 				if ent.armors then
 					muffed = ent.armors["face"] == "mask2" or ent.PlayerClassName == "Combine"

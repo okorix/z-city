@@ -217,12 +217,13 @@ function SWEP:AnimApply_ShootRecoil(time)
 	if animpos > 0 then
 		animpos = animpos * ((self:IsZoom() and self.SpreadMulZoom or self.SpreadMul) + math_max(self.Primary.Force / 110 - 1, 0)) * (( not owner:IsNPC() and owner:Crouching() ) and self.CrouchMul or 1) * 0.75
 		animpos = animpos * self.AnimShootMul
+		animpos = math.Clamp(animpos * 1, 0.01, 1)
 		animpos = math.ease.InOutSine(animpos)
 
 		//if self.IsPistolHoldType and not self:IsPistolHoldType() then
 			if CLIENT and (owner ~= LocalPlayer() or LocalPlayer() ~= GetViewEntity()) then
-				self:BoneSet("spine", vecZero, Angle(0, 0, -15 * animpos * self.Primary.Force / 50 * (self.NumBullet and self.NumBullet * 0.5 or 1)))
-				self:BoneSet("head", vecZero, Angle(0, -15 * animpos * self.Primary.Force / 50 * (self.NumBullet and self.NumBullet * 0.5 or 1)), 0)
+				self:BoneSet("spine", vecZero, Angle(0, 0, -15 * animpos * self.Primary.Force / 50 * (self.NumBullet and self.NumBullet * 0.5 or 1)), "shooting")
+				self:BoneSet("head", vecZero, Angle(0, -15 * animpos * self.Primary.Force / 50 * (self.NumBullet and self.NumBullet * 0.5 or 1)), "shooting")
 			end
 		//end
 	end

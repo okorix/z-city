@@ -77,7 +77,7 @@ module[2] = function(owner, org, timeValue)
 	if org.pulse < 10 or org.brain >= 0.6 then org.heartstop = true end
 	if org.temperature < 28 or org.temperature > 42 then org.heartstop = true end
 
-	if org.temperature < 34 or org.temperature > 38 then
+	if org.temperature < 34 or org.temperature > 38 or org.blood < 4000 or org.pain > 20 then
 		org.fear = math.max(org.fear, 0)
 	end
 

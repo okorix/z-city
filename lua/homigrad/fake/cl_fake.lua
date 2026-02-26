@@ -37,7 +37,7 @@ hook.Add("InputMouseApply", "fakeCameraAngles", function(cmd, x, y, angle)
 		angle.pitch = math.Clamp(angle.pitch + y / 50, -89, 89)
 		angle.yaw = angle.yaw - x / 50
 	end
-	
+
 	cmd:SetViewAngles(angle)
 	lply.fakeangles = angle
 
@@ -50,12 +50,19 @@ local oldangs = Angle()
 local lerpedq = Quaternion()
 local hg_newfakecam = ConVarExists("hg_newfakecam") and GetConVar("hg_newfakecam") or CreateConVar("hg_newfakecam", 0, FCVAR_ARCHIVE, "New camera rotate", 0, 1)
 local rollang = 0
+local ctime
 hook.Add("HG.InputMouseApply", "fakeCameraAngles2", function(tbl)
+	if IsValid(follow) and ctime != CurTime() then
+		ctime = CurTime()
+
+		hook.Run("ViewpunchThink", tbl)
+	end
+
 	local cmd = tbl.cmd
 	local x = tbl.x
 	local y = tbl.y
 	local angle = tbl.angle
-	
+
 	local wep = lply:GetActiveWeapon()
 
 	local consmul = 1 - hg.CalculateConsciousnessMul()
@@ -92,7 +99,7 @@ hook.Add("HG.InputMouseApply", "fakeCameraAngles2", function(tbl)
 	local vel = follow:GetVelocity()
 	local huy = vel:Dot(angle:Right()) / 1500
 
-	angle.roll = angle.roll - (lply.addvpangles and lply.addvpangles[3] or 0)
+	angle.roll = angle.roll
 	angle.roll = math.NormalizeAngle(angle.roll)
 	local adda = 1--math.Clamp((0.7 - math.abs(angle.roll / 90)), 0, 1) * math.Clamp((0.7 - math.abs(angle.pitch / 90)), 0, 1)
 	
@@ -106,7 +113,7 @@ hook.Add("HG.InputMouseApply", "fakeCameraAngles2", function(tbl)
 
 	local fucke = false--!hg_newfakecam:GetBool()
 	local oldroll = angle.roll
-	angle.roll = fucke and 0 or angle.roll
+	angle.roll = fucke and 0 or angle.roll - (tbl.vpangle and tbl.vpangle.roll or 0)
 
 	rollang = rollang + lean_lerp * 0.5
 
@@ -149,6 +156,7 @@ local hg_firstperson_death = ConVarExists("hg_firstperson_death") and GetConVar(
 local hg_firstperson_ragdoll = ConVarExists("hg_firstperson_ragdoll") and GetConVar("hg_firstperson_ragdoll") or CreateConVar("hg_firstperson_ragdoll", 0, FCVAR_ARCHIVE, "Toggle first-person ragdoll camera view", 0, 1)
 local hg_fov = ConVarExists("hg_fov") and GetConVar("hg_fov") or CreateClientConVar("hg_fov", "70", true, false, "Change first-person field of view", 75, 100)
 local hg_gopro = ConVarExists("hg_gopro") and GetConVar("hg_gopro") or CreateClientConVar("hg_gopro", "0", true, false, "Toggle GoPro-like camera view", 0, 1)
+local hg_thirdperson = ConVarExists("hg_thirdperson") and GetConVar("hg_thirdperson") or CreateConVar("hg_thirdperson", 0, FCVAR_REPLICATED, "Toggle third-person camera view", 0, 1)
 
 local k = 0
 local wepPosLerp = Vector(0,0,0)
@@ -265,7 +273,7 @@ CalcView = function(ply, origin, angles, fov, znear, zfar)
 
 	hg.cam_things(ply, view, angleZero)
 	
-	if hg.RagdollCombatInUse(ply) or (fakeTimer and fakeTimer > CurTime()) then
+	if hg_thirdperson:GetBool() or hg.RagdollCombatInUse(ply) or (fakeTimer and fakeTimer > CurTime()) then
 		if hg_firstperson_death:GetBool() then
 			deathlerp = LerpFT(0.05,deathlerp,1)
 			local angdeath = LerpAngle(deathlerp,deathLocalAng,att_Ang)
@@ -332,6 +340,8 @@ CalcView = function(ply, origin, angles, fov, znear, zfar)
 		wep:DrawAttachments()
 	end--]]
 	
+	if ply.organism and ply.organism.otrub then view.angles = att_Ang end
+
 	if hg_gopro:GetBool() then
 		return SpecCam(follow, origin, angles, fov, znear, zfar)
 	end
