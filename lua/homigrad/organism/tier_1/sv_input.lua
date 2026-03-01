@@ -414,6 +414,29 @@ function hg.AddHarm(ply, harm, reason)
 	ply.harm = ply.harm + harm
 end
 
+function hg.ExplodeHead(ent)
+	if !IsValid(ent) then return end
+
+	local ply = ent:IsRagdoll() and hg.RagdollOwner(ent) or ent
+	if ply:Alive() then ply:Kill() end
+
+	timer.Simple(0, function()
+		local ent = ent:IsRagdoll() and ent or ent:GetNWEntity("RagdollDeath")
+		if not IsValid(ent) then return end
+		--[[if not isbool(ent) then
+			hook.Run("OnHeadExplode", ply, ent)
+		end]]
+
+		Gib_Input(ent, ent:LookupBone("ValveBiped.Bip01_Head1"))
+		
+		ent.organism.headamputated = true
+		ent.headexploded = true
+
+		ent.organism.owner.fullsend = true
+		hg.send_bareinfo(ent.organism)
+	end)
+end
+
 local net, math, hg, IsValid = net, math, hg, IsValid
 local takeRagdollDamage
 hook.Add("EntityTakeDamage", "homigrad-damage", function(ent, dmgInfo)
@@ -993,18 +1016,7 @@ hook.Add("EntityTakeDamage", "homigrad-damage", function(ent, dmgInfo)
 			should = org.dmgstack[hitgroup][1] > hitgroup_max
 			--print(rag, should, hitgroup == HITGROUP_HEAD, bonename, hitgroup, HITGROUP_HEAD)
 			if should and hitgroup == HITGROUP_HEAD then
-				--[[if not IsValid(ply) then
-					ply = hg.RagdollOwner(rag)
-				end
-				if not isbool(ply) then
-					hook.Run("OnHeadExplode", ply, rag)
-				end]]
-
-				Gib_Input(rag, rag:TranslatePhysBoneToBone(bone), dirCool * len)
-
-				rag.headexploded = true
-				org.headamputated = true
-				rag.organism.headamputated = true
+				hg.ExplodeHead(ent)
 
 				org.dmgstack[hitgroup][1] = nil
 				org.dmgstack[hitgroup][2] = nil
@@ -1684,12 +1696,14 @@ function hg.VehicleHitFunc(ent, tr, bullet, details)
 		if detail.boxcalc then
 			lpos, lang, mins, maxs = detail.boxcalc(ent)
 		end
+		
+		if !lpos then continue end
 
 		local pos, ang = LocalToWorld(lpos, lang, ent:GetPos(), ent:GetAngles())
 
 		local hitpos, hitnormal, frac = util.IntersectRayWithOBB(tr.HitPos, tr.Normal * 1000, pos, ang, mins, maxs)
 		
-		debugoverlay.BoxAngles(pos, detail.mins, detail.maxs, ang, 1, color_white)
+		debugoverlay.BoxAngles(pos, mins, maxs, ang, 1, color_white)
 		debugoverlay.Line(tr.HitPos, tr.HitPos + tr.Normal * 1000, 1, color_white, true)
 		
 		if hitpos then
@@ -1703,8 +1717,8 @@ function hg.VehicleHitFunc(ent, tr, bullet, details)
 	return penetration, maxdmg
 end
 
-local defaultEngineMins = Vector(-25, -35, -12)
-local defaultEngineMaxs = Vector(35, 35, 10)
+local defaultEngineMins = Vector(-25, -35, -8)
+local defaultEngineMaxs = Vector(35, 35, 35)
 local defaultEngineOffset = Vector(65, 0, 0)
 hg.vehicledetails = {
 	["prop_vehicle_prisoner_pod"] = {},
@@ -1774,6 +1788,8 @@ hook.Add("Think", "jajaja", function()
 					if detail.boxcalc then
 						lpos, lang, mins, maxs = detail.boxcalc(ent)
 					end
+
+					if !lpos then continue end
 
 					local pos, ang = LocalToWorld(lpos, lang, ent:GetPos(), ent:GetAngles())
 										

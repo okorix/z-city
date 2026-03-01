@@ -582,6 +582,13 @@ function SWEP:FireBullet()
 		if IsValid(phys) then
 			phys:ApplyForceOffset(-dir * self.Primary.Force * 5, pos)
 		end
+	else
+		local char = hg.GetCurrentCharacter(owner)
+		local phys = char:GetPhysicsObjectNum(0)
+		
+		if IsValid(phys) then
+			phys:ApplyForceOffset(-dir * self.Primary.Force * 40 * (self.NumBullet or 1), pos)
+		end
 	end
 
 	--[[local enta = ents.Create("prop_physics")
@@ -664,7 +671,7 @@ function SWEP:FireBullet()
     bullet.Callback = bulletHit
 
 	local filter = {self, self.worldModel}
-	if owner:InVehicle() then
+	if IsValid(owner) and owner.InVehicle and owner:InVehicle() then
 		local veh = owner:GetVehicle()
 		
 		table.insert(filter, veh)
