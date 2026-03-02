@@ -1,4 +1,5 @@
 local hg_xray = ConVarExists("hg_xray") and GetConVar("hg_xray") or CreateConVar("hg_xray",0,FCVAR_ARCHIVE,"enables xray mode like in sniper elite 3",0,1)
+hg.organism_ents = hg.organism_ents or {}
 
 net.Receive("organism_send", function()
 	local org = net.ReadTable()
@@ -8,6 +9,10 @@ net.Receive("organism_send", function()
 	local add = net.ReadBool()
 	local ply = org.owner
 	
+	if ply:IsNPC() then
+		hg.organism_ents[ply] = true
+	end
+
 	if add and org.owner.organism and org.owner.new_organism then
 		hook.Run("HG_OrganismChanged", org.owner.organism, org)
 		
