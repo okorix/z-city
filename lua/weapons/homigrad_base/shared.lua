@@ -2066,8 +2066,8 @@ function SWEP:SetHandPos(noset)
 	if not rhmat or not lhmat then return end
 
 	local atk = hg.KeyDown(ply, IN_ATTACK)
-	self.anglefinger[2] = LerpFT(atk and 1 or 0.1, self.anglefinger[2], atk and 45 or 0)
-
+	self.anglefinger[2] = LerpFT(atk and 1 or 0.1, self.anglefinger[2], self:CanUse() and atk and 30 or 0)
+	self.anglefinger[1] = self.anglefinger[2] * 0.3
 	if !should then
 		local vec1, ang1 = -(-self.handPos), -(-self.handAng)
 
