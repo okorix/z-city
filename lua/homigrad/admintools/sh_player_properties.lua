@@ -329,15 +329,20 @@ properties.Add( "apply_spam", {
 		local Extend = submenu:AddOption("Extend")
 		Extend:SetRadio(true)
 		Extend:SetIsCheckable(true)
-		Extend.OnChecked = function(s, checked) if checked then self:AmputateLimb(ent, 0) end end
+		Extend.OnChecked = function(s, checked) if checked then self:ApplySpasm(ent, 0) end end
 
 		local Rigor = submenu:AddOption("Rigor")
 		Rigor:SetRadio(true)
 		Rigor:SetIsCheckable(true)
-		Rigor.OnChecked = function(s, checked) if checked then self:AmputateLimb(ent, 1) end end
+		Rigor.OnChecked = function(s, checked) if checked then self:ApplySpasm(ent, 1) end end
+
+		local Flexion = submenu:AddOption("Flexion")
+		Flexion:SetRadio(true)
+		Flexion:SetIsCheckable(true)
+		Flexion.OnChecked = function(s, checked) if checked then self:ApplySpasm(ent, 2) end end
 	end,
 
-	AmputateLimb = function( self, ent, id )
+	ApplySpasm = function( self, ent, id )
 		self:MsgStart()
 			net.WriteEntity( ent )
 			net.WriteUInt( id, 8 )
@@ -355,6 +360,8 @@ properties.Add( "apply_spam", {
 			typeString = "extend"
 		elseif type == 1 then
 			typeString = "rigor"
+		elseif type == 2 then
+			typeString = "flexion"
 		end
 		hg.applySpasm(ent,typeString)
 	end
