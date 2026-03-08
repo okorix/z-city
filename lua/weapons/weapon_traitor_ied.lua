@@ -433,6 +433,9 @@ if SERVER then
 		if not (self.Planted or self.HaveTheBomb or self.PlantedOnSelf) then
 			local Owner = self:GetOwner()
 			local Tr = self:GetEyeTrace()
+			if ent then
+				Tr.Entity = ent
+			end
 
 			if IsValid(Tr.Entity) and IsValid(Tr.Entity:GetPhysicsObject()) and Tr.Entity:GetPhysicsObject():GetMass() < 500 then
 				local min, max = Tr.Entity:GetModelBounds()
