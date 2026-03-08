@@ -429,7 +429,7 @@ if SERVER then
 	function SWEP:PrimaryAttack()
 		self:AttackHuy()
 	end
-	function SWEP:AttackHuy()
+	function SWEP:AttackHuy(ent)
 		if not (self.Planted or self.HaveTheBomb or self.PlantedOnSelf) then
 			local Owner = self:GetOwner()
 			local Tr = self:GetEyeTrace()
@@ -440,7 +440,7 @@ if SERVER then
 				local size = minmaxs[1] + minmaxs[2] + minmaxs[3]
 				if size <= 15 then return end
 
-				bomb = Tr.Entity
+				bomb = ent or Tr.Entity
 				--bomb:GetPhysicsObject():SetMass(bomb:GetPhysicsObject():GetMass()+20)
 
 				self.Planted = true
@@ -477,30 +477,6 @@ if SERVER then
 
 
 	function SWEP:Reload() -- hell yeah
-		if not self.Planted and not self.PlantedOnSelf then
-			local Owner = self:GetOwner()
-
-			self.PlantedOnSelf = true
-
-
-			self.WorldModel = "models/saraphines/insurgency explosives/ied/insurgency_ied_phone.mdl"
-
-			net.Start("ied_have_the_bomb")
-			net.WriteEntity(self)
-			net.Broadcast()
-
-			Owner:EmitSound("snd_jack_hmcd_bombrig.wav",50,100,1,CHAN_AUTO)
-
-			self.Planted = true
-
-
-			timer.Simple(5, function()
-				if IsValid(self) and IsValid(Owner) and self.PlantedOnSelf then
-					ExplodeTheItem(self, Owner)
-				end
-			end)
-
-			self:SetNextPrimaryFire(CurTime() + 2)
-		end
+		self:AttackHuy(self:GetOwner())
 	end
 end
