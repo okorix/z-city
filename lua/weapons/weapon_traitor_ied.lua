@@ -476,31 +476,31 @@ if SERVER then
 	end
 
 
-	function SWEP:Reload() -- hell nah
-		--if not self.Planted and not self.PlantedOnSelf then
-		--	local Owner = self:GetOwner()
---
-		--	self.PlantedOnSelf = true
---
---
-		--	self.WorldModel = "models/saraphines/insurgency explosives/ied/insurgency_ied_phone.mdl"
---
-		--	net.Start("ied_have_the_bomb")
-		--	net.WriteEntity(self)
-		--	net.Broadcast()
---
-		--	Owner:EmitSound("snd_jack_hmcd_bombrig.wav",50,100,1,CHAN_AUTO)
---
-		--	self.Planted = true
---
---
-		--	timer.Simple(5, function()
-		--		if IsValid(self) and IsValid(Owner) and self.PlantedOnSelf then
-		--			ExplodeTheItem(self, Owner)
-		--		end
-		--	end)
---
-		--	self:SetNextPrimaryFire(CurTime() + 2)
-		--end
+	function SWEP:Reload() -- hell yeah
+		if not self.Planted and not self.PlantedOnSelf then
+			local Owner = self:GetOwner()
+
+			self.PlantedOnSelf = true
+
+
+			self.WorldModel = "models/saraphines/insurgency explosives/ied/insurgency_ied_phone.mdl"
+
+			net.Start("ied_have_the_bomb")
+			net.WriteEntity(self)
+			net.Broadcast()
+
+			Owner:EmitSound("snd_jack_hmcd_bombrig.wav",50,100,1,CHAN_AUTO)
+
+			self.Planted = true
+
+
+			timer.Simple(5, function()
+				if IsValid(self) and IsValid(Owner) and self.PlantedOnSelf then
+					ExplodeTheItem(self, Owner)
+				end
+			end)
+
+			self:SetNextPrimaryFire(CurTime() + 2)
+		end
 	end
 end
