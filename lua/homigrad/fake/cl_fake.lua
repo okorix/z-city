@@ -19,42 +19,56 @@ local hg_coolcameralerpmult = ConVarExists("hg_coolcameralerpmult") and GetConVa
 function GetCoolCameraBool()
 	return hg_coolcamera:GetBool() and !lply:InVehicle()
 end
-realanglelerp = Angle()
 
+local diff = Angle()
 hook.Add("InputMouseApply", "fakeCameraAngles", function(cmd, x, y, angle)
 	local tbl = {}
-	
-	if GetCoolCameraBool() then
-		realangle = realangle or angle
+	local cc = GetCoolCameraBool()
+	if cc then
+		diff = diff + realanglelerp + GetViewPunchAngles2() * 1 + GetViewPunchAngles() * 1 + GetViewPunchAngles3() * 1 + GetViewPunchAngles4() * 1 - angle
+		realangle = realangle and (realangle - diff) or angle
+		realangle:Normalize()
 		angle = realangle
 	end
-
+	
 	tbl.cmd = cmd
 	tbl.x = x
 	tbl.y = y
 	tbl.angle = angle
 	
+	if cc then
+		tbl.angle = realangle
+	end
+
 	hook.Run("HG.InputMouseApply", tbl)
+
+	
 
 	if !lply:Alive() then
 		tbl.angle.r = 0
 	end
-	
+
 	cmd = tbl.cmd
 	x = tbl.x
 	y = tbl.y
 	angle = tbl.angle
+	
+	if cc then
+		realangle = tbl.angle
+	end
 
 	if not tbl.override_angle then
 		angle.pitch = math.Clamp(angle.pitch + y / 50, -89, 89)
 		angle.yaw = angle.yaw - x / 50
 	end
 
-	if GetCoolCameraBool() then
-		realangle = angle
+	if cc then
 		realanglelerp = LerpAngleFT(0.09 * (hg_coolcameralerpmult:GetFloat() or 1), realanglelerp, realangle)
 		angle = realanglelerp + GetViewPunchAngles2() * 1 + GetViewPunchAngles() * 1 + GetViewPunchAngles3() * 1 + GetViewPunchAngles4() * 1
 		if !IsValid(lply.FakeRagdoll) then angle[1] = math.Clamp(angle[1], -89, 89) end
+		realangle = realangle + diff
+		diff = LerpAngleFT(0.01, diff, angle_zero)
+		diff.roll = LerpFT(0.1, diff.roll, 0)
 		cmd:SetViewAngles(angle)
 	else
 		cmd:SetViewAngles(angle)
@@ -93,11 +107,6 @@ hook.Add("HG.InputMouseApply", "fakeCameraAngles2", function(tbl)
 	end
 
 	ViewPunch4(Angle(y / 50 / 16, -x / 50 / 16, -x / 50 / 1) * 0.1)
-	
-	if GetCoolCameraBool() then
-		realangle.roll = angle.roll
-		angle = realangle
-	end
 
 	if !IsValid(lply) or !lply:Alive() then return end
 
@@ -361,7 +370,7 @@ CalcView = function(ply, origin, angles, fov, znear, zfar)
 	view = hook.Run("Camera", ply, view.origin, view.angles, view, vector_origin) or view
 	
 	if GetCoolCameraBool() then
-		view.angles = realangle + GetViewPunchAngles() * 0.2 + vpang
+		view.angles = realangle + GetViewPunchAngles() * 0.2 - vpang
 		view.angles[3] = view.angles[3] - GetViewPunchAngles4()[3]
 	end
 
