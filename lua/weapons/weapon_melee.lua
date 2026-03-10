@@ -392,7 +392,7 @@ function SWEP:ModelAnim(model, pos, ang)
     if !IsValid(owner) or !owner:IsPlayer() then return end
 
     local ent = hg.GetCurrentCharacter(owner)
-    local tr = hg.eyeTrace(owner, 20, ent)
+    local tr = hg.eyeTrace(owner, 40, ent)
     local eyeAng = owner:EyeAngles()
 
     local vel = ent:GetVelocity()
@@ -442,7 +442,7 @@ function SWEP:ModelAnim(model, pos, ang)
        addAngLerp.p = addAngLerp.p - math.min(math.abs(math.max(eyeAng.p,0)),25)
     end
 
-    addPosLerp.x = addPosLerp.x - 20 * math.max(0.5 - tr.Fraction,0)
+    addPosLerp.x = addPosLerp.x - 20 * math.max(0.5 - tr.Fraction, 0)
 
     if self.CanSuicide and owner.suiciding then
         addPosLerp:Set(self.SuicidePos)
@@ -1027,6 +1027,12 @@ function SWEP:AddDecal()
     net.SendPVS(self:GetPos())
 end
 
+local hg_nomeleestop
+
+if CLIENT then
+    hg_nomeleestop = ConVarExists("hg_nomeleestop") and GetConVar("hg_nomeleestop") or CreateConVar("hg_nomeleestop", 0, FCVAR_ARCHIVE, "Toggle melee stop-on-hit animation feature", 0, 1)
+end
+
 function SWEP:CustomThink()
     local owner = self:GetOwner()
     local actwep = owner.GetActiveWeapon and owner:GetActiveWeapon()
@@ -1166,7 +1172,7 @@ function SWEP:CustomThink()
                 self:AddDecal()
             end
 
-			if CLIENT and IsFirstTimePredicted() and self.weight > 0.4 and (!self.stopanim or (!soft and !self.HitWorld)) then
+			if CLIENT and IsFirstTimePredicted() and self.weight > 0.4 and (!self.stopanim or (!soft and !self.HitWorld)) and !hg_nomeleestop:GetBool() then
 				if !soft or self.AnimAlwaysBack or self.HitWorld then   
                     local mul = 5
                     self.animspeed = self.animspeed * mul
@@ -1195,11 +1201,11 @@ function SWEP:CustomThink()
                     self.animtime = CurTime() - timing * self.animspeed * mul + self.animspeed * mul
                     self.animspeed = self.animspeed * mul
                     
-                    timer.Simple(0.4, function()
+                    timer.Simple(0.1, function()
                         if !IsValid(self) then return end
 
                         local timing = (1 - math.Clamp((self.animtime - CurTime()) / self.animspeed, 0, 1))
-                        local mul = 0.25
+                        local mul = 0.3
                         
                         self.animtime = CurTime() - timing * self.animspeed * mul + self.animspeed * mul
                         self.animspeed = self.animspeed * mul
@@ -1760,6 +1766,8 @@ end
 
 function SWEP:NPCThink()
     local npc = self:GetOwner()
+    if not IsValid(npc) or not npc:IsNPC() then return end
+
     self:SetWeaponHoldType("melee")
     
     if npc:GetClass() == "npc_metropolice" then
@@ -1773,7 +1781,7 @@ function SWEP:NPCThink()
     end
     
     local enemy = npc:GetEnemy()
-    if not enemy then return end
+    if not IsValid(enemy) then return end
 
     local dist = enemy:GetPos():Distance(npc:GetPos())
 
