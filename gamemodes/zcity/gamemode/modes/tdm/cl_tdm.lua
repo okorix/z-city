@@ -412,7 +412,7 @@ local function OpenBuyMenu()
 			end
 			
 			if weapon then
-				local ammo = weapon.Primary.Ammo != "none" and weapon.Primary.Ammo or weapon.Ammo or (weapons.GetStored( weapon.Base ) and weapons.GetStored( weapon.Base ).Primary.Ammo)
+				local ammo = (weapon.Primary and weapon.Primary.Ammo != "none") and weapon.Primary.Ammo or weapon.Ammo or (weapons.GetStored( weapon.Base ) and weapons.GetStored( weapon.Base ).Primary.Ammo)
 				
 				if hg.ammotypeshuy[ammo] then
 					local amm = vgui.Create( "DButton", ItemButton)
