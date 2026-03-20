@@ -17,7 +17,7 @@ colors.scrollbarGripHover = Color(100,100,130,255)
 colors.scrollbarBorder = Color(100,100,120,200)
 colors.previewBorder = Color(255,200,50,255)
 
-local presetsDir = "zcity/appearances/presets/"
+local presetsDir = "h_zcity/appearances/presets/"
 
 local function SavePreset(strName, tblAppearance)
     file.CreateDir(presetsDir)

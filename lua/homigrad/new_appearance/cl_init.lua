@@ -5,7 +5,7 @@ hg.Appearance = hg.Appearance or {}
 hg.Appearance.SelectedAppearance = ConVarExists("hg_appearance_selected") and GetConVar("hg_appearance_selected") or CreateClientConVar("hg_appearance_selected","main",true,false,"name of selected appearance json file")
 hg.Appearance.ForcedRandom = ConVarExists("hg_appearance_force_random") and GetConVar("hg_appearance_force_random") or CreateClientConVar("hg_appearance_force_random","0",true,false,"forced appearance random",0,1)
 
-local dir = "zcity/appearances/"
+local dir = "h_zcity/appearances/"
 function hg.Appearance.CreateAppearanceFile(strFile_name, tblAppearance)
 	file.CreateDir(dir)
 	file.Write(dir .. strFile_name .. ".json", util.TableToJSON(tblAppearance, true) )
@@ -15,7 +15,7 @@ function hg.Appearance.LoadAppearanceFile(strFile_name)
 	if not file.Exists(dir .. strFile_name .. ".json", "DATA") then return false end
 	local tblAppearance = util.JSONToTable(file.Read(dir .. strFile_name .. ".json"))
 
-	if not hg.Appearance.AppearanceValidater(tblAppearance) then return false, "file is damaged [data/zcity/appearances/" .. strFile_name .. ".json]"  end
+	if not hg.Appearance.AppearanceValidater(tblAppearance) then return false, "file is damaged [data/h_zcity/appearances/" .. strFile_name .. ".json]"  end
 
 	return tblAppearance
 end
