@@ -861,9 +861,9 @@ function MODE:Intermission()
 	end
 end
 
---[[concommand.Add("hmcd_call_police", function(ply, cmd, args)
+concommand.Add("hmcd_call_police", function(ply, cmd, args)
     if IsValid(ply) and not ply:IsAdmin() then
-        ply:ChatPrint("loh.")
+        ply:ChatPrint("You're not allowed to use this command.")
         return
     end
 
@@ -874,7 +874,7 @@ end
 
     MODE.saved.PoliceTime = CurTime() - 1
     print("true")
-end)--]]
+end)
 
 function MODE:CheckAlivePlayers()
 	local AlivePlyTbl = {
