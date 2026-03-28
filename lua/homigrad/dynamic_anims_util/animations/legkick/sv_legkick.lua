@@ -7,6 +7,7 @@ function PLAYER:LegAttack()
     if self.InLegKick and self.InLegKick > CurTime() then return end
     if self:GetNWBool("TauntStopMoving", false) then return end
     if hook.Run( "PlayerCanLegAttack", self ) == false then return end
+    if self.organism and (self.organism.llegamputated or self.organism.rlegamputated) then return end
 
 	local handClass = "weapon_hands_sh"
 	if self:HasWeapon("weapon_hg_coolhands") then
