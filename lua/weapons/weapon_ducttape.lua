@@ -258,7 +258,12 @@ function SWEP:FindObjects()
 	while not GotOne and (Tries < 100) do
 		local Tr = util.QuickTrace(Pos - Vec * 10, Vec * 60, {Owner})
 		local FindBone = util.QuickTrace(Pos, Vec * 60, {Owner})
+		local Entity = Tr.Entity
 		if Tr.Hit and not Tr.HitSky and not table.HasValue(self.UnTapeables, Tr.MatType) then
+			if IsValid(Entity) and Entity:IsPlayer() then
+				Tries = Tries + 1
+				continue
+			end
 			GotOne = true
 			TrOne = Tr
 			TrOne.PhysicsBone = FindBone.PhysicsBone
@@ -273,7 +278,12 @@ function SWEP:FindObjects()
 		while not GotOne and (Tries < 100) do
 			local Tr = util.QuickTrace(Pos - Vec * 10, Vec * 60 + VectorRand() * 1, {Owner, TrOne.Entity})
 			local FindBone = util.QuickTrace(Pos, Vec * 60, {Owner, TrOne.Entity})
+			local Entity = Tr.Entity
 			if Tr.Hit and not Tr.HitSky and not table.HasValue(self.UnTapeables, Tr.MatType) and (Tr.Entity ~= TrOne.Entity) then
+				if IsValid(Entity) and Entity:IsPlayer() then
+					Tries = Tries + 1
+					continue
+				end
 				GotOne = true
 				TrTwo = Tr
 				TrTwo.PhysicsBone = FindBone.PhysicsBone
