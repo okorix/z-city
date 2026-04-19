@@ -333,6 +333,7 @@ local MaxLookY,MinLookY = 45,-45
 util.AddNetworkString("LookAway")
 net.Receive("LookAway",function(len,ply)
 	if len > 64 or !IsValid(ply) then return end
+	if !ply:Alive() then return end
 	if (ply.cooldown_lookaway or 0) > CurTime() then return end
 	ply.cooldown_lookaway = CurTime() + 0.1
 
