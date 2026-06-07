@@ -356,6 +356,8 @@ local function OpenBuyMenu()
 		CategoryPanel.Paint = function() end
 		for n,Item in pairs(category) do
 			if n == "Priority" then continue end
+			if Item.TeamBased and Item.TeamBased ~= LocalPlayer():Team() then continue end
+
 			local weapon = weapons.GetStored( Item.ItemClass )
 			local ent = scripted_ents.GetStored( Item.ItemClass )
 
