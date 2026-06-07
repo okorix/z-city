@@ -367,14 +367,23 @@ local function OpenBuyMenu()
 			ItemPanel:DockMargin(0,8,0,0)
 			ItemPanel.Paint = PaintPanel1
 			--print(Item.ItemClass,weapon)
-			if ( weapon ~= nil and ( (weapon.WepSelectIcon2 and weapon.WepSelectIcon2:GetName()) or (weapon.IconOverride)) ) or ((ent and ent.t.IconOverride)) then
-				local ItemButton = vgui.Create("DImage",ItemPanel)
-				local bBox = ((ent and ent.t.IconOverride) or weapon~=nil and weapon.WepSelectIcon2box)
-				ItemButton:SetSize(ScrH() * ( (bBox and 0.1) or 0.17), ScrH() * 0.1)
+			local itemIcon
+			if weapon ~= nil then
+				itemIcon = (weapon.WepSelectIcon2 and weapon.WepSelectIcon2:GetName() .. ".png")
+					or weapon.IconOverride
+					or (weapon.WepSelectIcon and weapon.WepSelectIcon:GetName() .. ".png")
+			elseif ent then
+				itemIcon = ent.t.IconOverride
+			end
+
+			if itemIcon then
+				local ItemButton = vgui.Create("DImage", ItemPanel)
+				local bBox = ((ent and ent.t.IconOverride) or weapon ~= nil and weapon.WepSelectIcon2box)
+				ItemButton:SetSize(ScrH() * ((bBox and 0.1) or 0.17), ScrH() * 0.1)
 				ItemButton:Dock(LEFT)
-				local boxed = ScrH()*0.07/2
-				ItemButton:DockMargin(5 + (bBox and boxed or 0),5,5 + (bBox and boxed or 0),5)
-				ItemButton:SetImage( ( weapon ~= nil and ( (weapon.WepSelectIcon2 and weapon.WepSelectIcon2:GetName() .. ".png") or weapon.IconOverride) ) or ((ent and ent.t.IconOverride) or "none") )
+				local boxed = ScrH() * 0.07 / 2
+				ItemButton:DockMargin(5 + (bBox and boxed or 0), 5, 5 + (bBox and boxed or 0), 5)
+				ItemButton:SetImage(itemIcon)
 			end
 
 			local ItemButton = vgui.Create("DPanel",ItemPanel)
