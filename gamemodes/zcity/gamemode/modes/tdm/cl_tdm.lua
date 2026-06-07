@@ -26,7 +26,7 @@ local teams = {
 
 hook.Add( "StartCommand", "TDM_DisallowMoveOrShoting", function( ply, mv )
 	--; BLYAT NY NAXUA PISAT VSE V ODNY LINIY BLYAAA
-	if zb.CROUND == "tdm" and (zb.ROUND_START or 0) + 20 > CurTime() then 
+	if zb.CROUND == "tdm" and (zb.ROUND_START or 0) + MODE.StartTime > CurTime() then 
 		mv:RemoveKey(IN_ATTACK)
 		mv:RemoveKey(IN_ATTACK2)
 		mv:RemoveKey(IN_FORWARD)
@@ -48,15 +48,15 @@ end
 function MODE:HUDPaint()
     local StartTime = zb.ROUND_START or CurTime()
 	self:AddHudPaint()
-	if StartTime + 20 > CurTime() then
-		draw.SimpleText( string.FormattedTime(StartTime + 20 - CurTime(), "%02i:%02i:%02i"	), "ZB_HomicideMedium", sw * 0.5, sh * 0.95, Color(255,255,255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+	if StartTime + MODE.StartTime > CurTime() then
+		draw.SimpleText( string.FormattedTime(StartTime + MODE.StartTime - CurTime(), "%02i:%02i:%02i"	), "ZB_HomicideMedium", sw * 0.5, sh * 0.95, Color(255,255,255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 		draw.SimpleText( "Press F3 to open buymenu", "ZB_HomicideMedium", sw * 0.5, sh * 0.9, Color(255,255,255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 	else
 		local time = string.FormattedTime( math.max(StartTime + (zb.ROUND_TIME or 400) - CurTime(), 0), "%02i:%02i:%02i" )
 		draw.SimpleText( time, "ZB_HomicideMedium", sw * 0.5, sh * 0.95, ColorObj, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 	end
 
-    if StartTime + 20 < CurTime() then return end
+    if StartTime + MODE.StartTime < CurTime() then return end
 	 
 	if not lply:Alive() then return end
 	zb.RemoveFade()
@@ -488,7 +488,7 @@ local function OpenBuyMenu()
 
 	local StartTime = zb.ROUND_START or CurTime()
 	local lbl = vgui.Create("DLabel", Frame)
-	lbl:SetText("Time Left: "..string.FormattedTime(StartTime + 40 - CurTime(), "%02i:%02i:%02i"))
+	lbl:SetText("Time Left: "..string.FormattedTime(StartTime +  - CurTime(), "%02i:%02i:%02i"))
 	lbl:DockMargin(10,0,10,10)
 	lbl:Dock(BOTTOM)
 	lbl:SetTextColor(Color(255,255,255))
@@ -496,8 +496,8 @@ local function OpenBuyMenu()
 	lbl:SetSize(0,ScrH()*0.015)
 
 	function lbl:Think()
-		if not LocalPlayer():Alive() or StartTime + 40 < CurTime() then TDM_OpenedBuyMenu:Remove() end
-		self:SetText("Time Left: "..string.FormattedTime(StartTime + 40 - CurTime(), "%02i:%02i:%02i"))
+		if not LocalPlayer():Alive() or StartTime + MODE.BuyTime < CurTime() then TDM_OpenedBuyMenu:Remove() end
+		self:SetText("Time Left: "..string.FormattedTime(StartTime + MODE.BuyTime - CurTime(), "%02i:%02i:%02i"))
 	end
 
 	local lbl = vgui.Create("DLabel", Frame)

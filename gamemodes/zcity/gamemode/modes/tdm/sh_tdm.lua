@@ -25,6 +25,8 @@ MODE.PrintName = "Team Deathmatch"
 ]]
 
 MODE.BuyItems = {}
+MODE.BuyTime = 40
+MODE.StartTime = 20
 
 local priority = 1
 local function AddItemToBUY(ItemName, Type, ItemClass, Price, Category, Attachments, Amount, TeamBased)

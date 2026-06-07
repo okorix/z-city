@@ -1,10 +1,8 @@
 local MODE = MODE
 
 MODE.name = "tdm"
-MODE.BuyTime = 40
 MODE.StartMoney = 6500
-MODE.start_time = 20
-MODE.buymenu = true
+MODE.BuyMenu = true
 
 MODE.ROUND_TIME = 240
 
@@ -185,7 +183,7 @@ util.AddNetworkString( "tdm_buyitem" )
 
 local AttachmentPrice = 50
 net.Receive("tdm_buyitem",function(len,ply)
-	if !CurrentRound().buymenu then return end
+	if !CurrentRound().BuyMenu then return end
 	if ((zb.ROUND_START or 0) + 40 < CurTime()) then ply:ChatPrint("Time's up!") return end
 	local tItem = net.ReadTable()
 	if not istable(tItem) then return end

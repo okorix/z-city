@@ -4,6 +4,7 @@ MODE.base = "tdm"
 
 MODE.PrintName = "Counter-Strike"
 MODE.name = "cstrike"
+MODE.StartTime = 20
 
 zb.Points.BOMB_ZONE_A = zb.Points.BOMB_ZONE_A or {}
 zb.Points.BOMB_ZONE_A.Color = Color(0,50,70)
