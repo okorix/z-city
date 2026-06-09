@@ -213,7 +213,7 @@ local function BindObjects(ent1, pos1, ent2, pos2, power, bone1, bone2)
 		ent2.DuctTape[bone2][2] = ent2.DuctTape[bone2][2] + 1
 	end
 	
-	return ent1:IsWorld() and ent2.DuctTape[bone2][2] or ent1.DuctTape[bone1][2]
+	return (IsValid(ent1) and ent1:IsWorld()) and (IsValid(ent2) and ent2.DuctTape[bone2][2]) or (IsValid(ent1) and ent1.DuctTape[bone1][2])
 end
 
 function hgCheckDuctTapeObjects(ent1)
