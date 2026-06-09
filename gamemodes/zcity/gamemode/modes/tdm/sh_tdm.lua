@@ -29,7 +29,7 @@ MODE.BuyTime = 40
 MODE.StartTime = 20
 
 local priority = 1
-local function AddItemToBUY(ItemName, Type, ItemClass, Price, Category, Attachments, Amount, TeamBased)
+local function AddItemToBUY(ItemName, Type, ItemClass, Price, Category, Attachments, Amount, TeamBased, DontShowAmmoBar)
     if not MODE.BuyItems[Category] then
         MODE.BuyItems[Category] = {}
         MODE.BuyItems[Category].Priority = priority
@@ -44,6 +44,7 @@ local function AddItemToBUY(ItemName, Type, ItemClass, Price, Category, Attachme
         Attachments = Attachments,
         Amount = Amount,
         TeamBased = TeamBased,
+        DontShowAmmoBar = DontShowAmmoBar
     }
 end
 -- Weapons
