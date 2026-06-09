@@ -195,6 +195,7 @@ net.Receive("tdm_buyitem",function(len,ply)
 	local item = buyItems[category][index]
 
 	if not item then return end
+	if ply:Team() ~= (item.TeamBased and item.TeamBased or ply:Team()) then ply:ChatPrint("You can't buy this item.") return end
 
 	if tItem[3] then
 		if not ply:HasWeapon(item.ItemClass) then ply:ChatPrint("You can't buy this attachment without a weapon.") return end
