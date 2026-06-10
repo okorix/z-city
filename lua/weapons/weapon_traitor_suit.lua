@@ -164,13 +164,15 @@ if CLIENT then
         self.CostumeMenu.lblTitle:SetTextColor(color_white)
         
 
-        local grid = vgui.Create("DGrid", self.CostumeMenu)
-        grid:Dock(FILL)
-        grid:DockMargin(10, 10, 10, 10)
+        local scroll = vgui.Create("DScrollPanel", self.CostumeMenu)
+        scroll:Dock(FILL)
+        scroll:DockMargin(10, 10, 10, 10)
+
+        local grid = vgui.Create("DGrid", scroll)
         grid:SetCols(2)
         grid:SetColWide(280)
-        grid:SetRowHeight(350) 
-        
+        grid:SetRowHeight(350)
+
         for i, costume in ipairs(self.AvailableCostumes) do
             local costumePanel = vgui.Create("DPanel")
             costumePanel:SetSize(270, 340) 
