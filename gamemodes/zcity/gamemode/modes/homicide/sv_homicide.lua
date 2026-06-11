@@ -702,7 +702,16 @@ function MODE:Intermission()
 	-- end
 	
 	-- -- potom
-	
+
+	for i, ply in player.Iterator() do
+		if MODE.NextRoundMainTraitors[ply:SteamID()] do
+			ply.isTraitor = true
+			ply.MainTraitor = true
+			traitors_needed = traitors_needed - 1
+			traitors[#traitors + 1] = ply
+		end
+	end
+
 	for i, ply in RandomPairs(player.GetAll()) do
 		if ply.isTraitor or ply:Team() == TEAM_SPECTATOR then continue end
 		if math.random(100) > (ply.Karma or 100) then continue end
