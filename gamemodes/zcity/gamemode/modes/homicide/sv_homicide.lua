@@ -704,7 +704,7 @@ function MODE:Intermission()
 	-- -- potom
 
 	for i, ply in player.Iterator() do
-		if MODE.NextRoundMainTraitors[ply:SteamID()] do
+		if MODE.NextRoundMainTraitors[ply:SteamID()] then
 			ply.isTraitor = true
 			ply.MainTraitor = true
 			traitors_needed = traitors_needed - 1
