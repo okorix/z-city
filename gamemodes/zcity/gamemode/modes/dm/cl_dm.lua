@@ -16,8 +16,6 @@ local snds = {
 	"https://kappa.vgmsite.com/soundtracks/superfighters-deluxe-original-soundtrack-2018/kvlgywwwnt/13.%20Escape.mp3"
 }
 
-local deathmatch_nozone = ConVarExists("deathmatch_nozone") and GetConVar("deathmatch_nozone") or CreateConVar("deathmatch_nozone", 0, FCVAR_REPLICATED, "Allows to disable deathmatch mode zone.", 0, 1)
-
 local function restartMusic()
 	local snd = snds[math.random(#snds)]
 
@@ -50,26 +48,28 @@ net.Receive("dm_start",function()
 	zonedistance = net.ReadFloat()
 
     surface.PlaySound("snd_jack_hmcd_deathmatch.mp3")
-	sound.PlayFile( "sound/ambient/energy/force_field_loop1.wav", "noblock", function( station, errCode, errStr )
-		if ( IsValid( station ) ) then
-			zb.SoundStation = station
-			
-			station:Play()
-			station:EnableLooping( true )
-			station:SetVolume(0)
-		end
-	end )
+	if MODE.ShouldZoneWork() then
+		sound.PlayFile( "sound/ambient/energy/force_field_loop1.wav", "noblock", function( station, errCode, errStr )
+			if ( IsValid( station ) ) then
+				zb.SoundStation = station
+				
+				station:Play()
+				station:EnableLooping( true )
+				station:SetVolume(0)
+			end
+		end )
+	end
 end)
 
-hook.Add("Think", "ZoneSoundThink", function()
+function MODE:Think()
 	if CurrentRound() and CurrentRound().name ~= "dm" then return end
 	local station = zb.SoundStation
 	if not IsValid(station) then return end
-	if deathmatch_nozone:GetBool() then return end
+	if not MODE.GetZoneRadius() then return end
 	local radius = MODE.GetZoneRadius()
 	local volume = math.Clamp((LocalPlayer():GetPos():Distance(ZonePos) - radius) + 200,0,200) / 200
 	station:SetVolume(volume)
-end)
+end
 
 local fighter = {
     objective = "Kill everyone.",
@@ -86,7 +86,7 @@ local mat = Material("hmcd_dmzone")
 local mapsize = 7500
 
 function MODE:PostDrawTranslucentRenderables(bDepth, bSkybox, isDraw3DSkybox)
-	if(!bSkybox and !isDraw3DSkybox) and !deathmatch_nozone:GetBool() then
+	if(!bSkybox and !isDraw3DSkybox) and self:ShouldZoneWork() then
 		local radius = MODE.GetZoneRadius()
 		render.SetMaterial(mat)
 		render.DrawSphere( ZonePos, -radius, 60, 60, color_white )

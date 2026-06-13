@@ -1,6 +1,8 @@
 
 local MODE = MODE
 
+local deathmatch_nozone = ConVarExists("deathmatch_nozone") and GetConVar("deathmatch_nozone") or CreateConVar("deathmatch_nozone", 0, FCVAR_REPLICATED, "Allows to disable deathmatch mode zone.", 0, 1)
+
 MODE.MapSize = 7500
 MODE.ZoneTimeToShrink = 120
 
@@ -9,6 +11,10 @@ function MODE.GetZoneRadius()
 	local dist = zonedistance + 2048
 	
 	return (dist * math.max(((zb.ROUND_START + MODE.ZoneTimeToShrink) - CurTime()) / MODE.ZoneTimeToShrink, 0.025))
+end
+
+function MODE.ShouldZoneWork()
+    return false
 end
 
 function MODE:HG_MovementCalc_2( mul, ply, cmd, mv )

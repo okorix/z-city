@@ -1,7 +1,5 @@
 local MODE = MODE
 
-local deathmatch_nozone = ConVarExists("deathmatch_nozone") and GetConVar("deathmatch_nozone") or CreateConVar("deathmatch_nozone", 0, FCVAR_REPLICATED, "Allows to disable deathmatch mode zone.", 0, 1)
-
 MODE.name = "dm"
 MODE.PrintName = "Deathmatch"
 MODE.LootSpawn = false
@@ -219,17 +217,21 @@ function MODE:RoundStart()
 	end
 end
 
-local cooldown = CurTime()
-hook.Add("Think","bober",function(ply)
-	local rnd = CurrentRound()
-	if not rnd or rnd.name != "dm" then return end
-	if (zb.ROUND_START or CurTime()) + 20 > CurTime() then return end
+function MODE:GiveWeapons()
+end
+
+function MODE:GiveEquipment()
+end
+
+local cooldown = 0
+function MODE:RoundThink()
 	if cooldown > CurTime() then return end
-	if deathmatch_nozone:GetBool() then return end
+	if not self:GetZoneRadius() then return end
+	if not self:ShouldZoneWork() then return end
 	cooldown = CurTime() + 0.5
 
 	local pos = zonepoint
-	local radius = MODE.GetZoneRadius()
+	local radius = self:GetZoneRadius()
 	local radiussqr = radius * radius
 	
 	for i, ent in ents.Iterator() do
@@ -253,15 +255,6 @@ hook.Add("Think","bober",function(ply)
 			end
 		end
 	end
-end)
-
-function MODE:GiveWeapons()
-end
-
-function MODE:GiveEquipment()
-end
-
-function MODE:RoundThink()
 end
 
 function MODE:PlayerDeath(ply)
