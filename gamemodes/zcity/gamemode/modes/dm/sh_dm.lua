@@ -14,7 +14,7 @@ function MODE.GetZoneRadius()
 end
 
 function MODE.ShouldZoneWork()
-    return false
+    return not deathmatch_nozone:GetBool()
 end
 
 function MODE:HG_MovementCalc_2( mul, ply, cmd, mv )
