@@ -221,7 +221,7 @@ if SERVER then
 		for i, ply2 in pairs(player.GetListByName(plya)) do
 			if ply2:Alive() then
 				local Appearance = ply2.CurAppearance or hg.Appearance.GetRandomAppearance()
-				Appearance.AColthes = ""
+				Appearance.AClothes = ""
 				ply2:SetNetVar("Accessories", "")
 				ply2:SetModel(mdl)
 				ply2:SetSubMaterial()
