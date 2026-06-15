@@ -846,7 +846,7 @@ hook.Add("EntityTakeDamage", "homigrad-damage", function(ent, dmgInfo)
 	
 		org.shock_turn = 10 * (!org.otrub and 1 or 0.1)
 	
-		if org.shock > org.shock_turn * 1.5 * analgesiaMul * painkillerMul then
+		if org.shock > org.shock_turn * 1.5 * analgesiaMul * painkillerMul and IsValid(org.owner) then
 			timer.Simple(0, function() hg.Fake(org.owner) end)
 		end
 
