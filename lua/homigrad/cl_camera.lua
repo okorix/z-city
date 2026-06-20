@@ -300,8 +300,7 @@ end
 local hg_coolcamera = ConVarExists("hg_coolcamera") and GetConVar("hg_coolcamera") or CreateConVar("hg_coolcamera", 0, FCVAR_ARCHIVE + FCVAR_REPLICATED, "Cool camera movement", 0, 5)
 
 CalcView = function(ply, origin, angles, fov, znear, zfar)
-	if g_VR and g_VR.active then return end
-	if GetViewEntity() ~= (ply or LocalPlayer()) then return end
+	if not hg.ShouldCamDraw(ply) then return end
 
 	local view = {
 		["origin"] = origin,
@@ -319,8 +318,6 @@ CalcView = function(ply, origin, angles, fov, znear, zfar)
 	lerpfovadd2 = LerpFT(0.1, lerpfovadd2, zooming and -25 or 0)
 
 	fov = hg_fov:GetInt()
-	
-	if not IsValid(ply) then return end
 	//do return end
 
 	--print(ply, ply.FakeRagdoll, ply:GetNWEntity("FakeRagdoll"))
@@ -360,9 +357,6 @@ CalcView = function(ply, origin, angles, fov, znear, zfar)
 		end
 	end
 
-	if not IsValid(ply) or not ply.LookupBone or not ply:LookupBone("ValveBiped.Bip01_Head1") then return end
-	
-	if not ply.GetAimVector then return end
 
 	local firstPerson = GetViewEntity() == lply
 
@@ -548,8 +542,6 @@ CalcView = function(ply, origin, angles, fov, znear, zfar)
 	view.angles:Add(-vpang)
 	view.angles[3] = view.angles[3] + GetViewPunchAngles4()[3]
 
-	wep = ply:GetActiveWeapon()
-	if IsValid(wep) and whitelist[wep:GetClass()] then return end
 	result = hook_Run("PostPostHGCalcView", ply, view)
 	if result then
 		return result
@@ -651,6 +643,22 @@ hook.Add( "HG.InputMouseApply", "FreezeTurning", function( tbl )
 
 end )
 
+function hg.ShouldCamDraw(ply)
+	ply = ply or LocalPlayer()
+
+	if g_VR and g_VR.active then return false end
+	if not IsValid(ply) then return false end
+	if GetViewEntity() ~= ply then return false end
+
+	if not ply.LookupBone or not ply:LookupBone("ValveBiped.Bip01_Head1") then return false end
+	if not ply.GetAimVector then return false end
+
+	local wep = ply:GetActiveWeapon()
+	if IsValid(wep) and whitelist[wep:GetClass()] then return false end
+
+	return true
+end
+
 hg.CalcView = CalcView
 hook.Add("CalcView", "homigrad-view", function(ply, origin, angles, fov, znear, zfar)
 	local viewa = viewOverride
@@ -717,7 +725,8 @@ local fLPly = LocalPlayer
 local IsValid = IsValid
 local function renderscene(pos, angle, fov)
 	lply = IsValid(lply) and lply or fLPly()
-	
+	if not hg.ShouldCamDraw(lply) then return end
+
 	pos = eyepos(lply)
 	angle = eyeangles(lply)
 	local view = CalcView(lply, pos, angle, fov)

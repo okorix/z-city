@@ -12,9 +12,17 @@ local function hgTrace(self)
 end
 
 function PLAYER:GetEyeTrace(...)
-	return hgTrace(self) or oldGetEyeTrace(self, ...)
+    if hg.ShouldCamDraw() then
+        return hgTrace(self)
+    else
+        return oldGetEyeTrace(self, ...)
+    end
 end
 
 function PLAYER:GetEyeTraceNoCursor(...)
-	return hgTrace(self) or oldGetEyeTraceNoCursor(self, ...)
+    if hg.ShouldCamDraw() then
+        return hgTrace(self)
+    else
+        return oldGetEyeTraceNoCursor(self, ...)
+    end
 end
