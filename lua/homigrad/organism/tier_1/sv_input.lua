@@ -760,19 +760,21 @@ hook.Add("EntityTakeDamage", "homigrad-damage", function(ent, dmgInfo)
 		if dmgInfo:GetAttacker():IsPlayer() then rf:AddPlayer(dmgInfo:GetAttacker()) end
 		
 		local name = dmgInfo:GetAttacker():IsPlayer() and dmgInfo:GetAttacker():Name() or dmgInfo:GetAttacker():GetClass()
+		local bone = ent:TranslatePhysBoneToBone(bone) or 0
 		net.Start("tracePosesSend")
 		net.WriteTable(tracePoses)
 		net.WriteEntity(ent)
 		net.WriteTable(hitBoxs)
 		net.WriteFloat(pen)
 		net.WriteFloat(size)
-		net.WriteInt(ent:TranslatePhysBoneToBone(bone) or 0,32)
+		net.WriteInt(bone,32)
 		net.WriteVector(mat:GetTranslation())
 		net.WriteAngle(mat:GetAngles())
 		net.WriteString(ent:GetModel())
 		net.WriteMatrix(ent:GetBoneMatrix(0))
 		net.WriteString(tostring(inf.PrintName or "Unknown"))
 		net.WriteString(tostring(name))
+		net.WriteMatrix(ent:GetBoneMatrix(bone))
 		net.Send(rf)
 	end
 	

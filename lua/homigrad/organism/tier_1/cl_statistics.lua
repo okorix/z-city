@@ -358,15 +358,19 @@ end
 csmodel = ClientsideModel("models/Humans/group01/Female_03.mdl",RENDERMODE_TRANSCOLOR)
 csmodel:SetNoDraw(true)
 
-if IsValid(skiletmodel) then
-	skiletmodel:Remove()
+local function doSkilet()
+	if IsValid(skiletmodel) then
+		skiletmodel:Remove()
+	end
+	skiletmodel = ClientsideModel("models/player/skeleton.mdl",RENDERMODE_TRANSCOLOR)
+	skiletmodel:SetNoDraw(true)
+	skiletmodel:SetSkin(2)
+	--skiletmodel:SetBodyGroups("1110")
+	skiletmodel:AddEffects( EF_BONEMERGE )
+	skiletmodel:SetParent(csmodel)
 end
-skiletmodel = ClientsideModel("models/player/skeleton.mdl",RENDERMODE_TRANSCOLOR)
-skiletmodel:SetNoDraw(true)
-skiletmodel:SetSkin(2)
---skiletmodel:SetBodyGroups("1110")
-skiletmodel:AddEffects( EF_BONEMERGE )
-skiletmodel:SetParent(csmodel)
+
+doSkilet()
 
 --skiletmodel:ManipulateBoneAngles( 0, Angle(0,0,0), false )
 
@@ -478,10 +482,10 @@ net.Receive("tracePosesSend", function()
 	local bone0 = net.ReadMatrix()
 	local inf = net.ReadString()
 	local att = net.ReadString()
+	local basebone = net.ReadMatrix()
 
 	-- timer.Simple(0.1,function()
 		local ent = hg.GetCurrentCharacter(ent) or ent
-		local basebone = ent:GetBoneMatrix(bone)
 		if not basebone then return end
 
 		local _,addang = WorldToLocal(matpos,matang,basebone:GetTranslation(),basebone:GetAngles())
@@ -725,6 +729,9 @@ hook.Add("HUDPaint","homigrad-wound-debug",function()
 					surface.SetDrawColor(155,0,0,15)
 					surface.DrawTexturedRect(0,0,ScrW(),ScrH(),0)
 				cam.End2D()
+				if not IsValid(skiletmodel) or not isentity(skiletmodel) then
+					doSkilet()
+				end
 				skiletmodel:DrawModel() // надо доделать, когда разберусь в стенсилах // а все уже, работает
 				cam.Start2D()
 					surface.SetDrawColor(155,0,0,95)
