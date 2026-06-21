@@ -60,6 +60,61 @@ end
 
 net.Receive("OnlyGet_Appearance", OnlyGetAppearance)
 
+-- Apply appearance (model submaterials / facemap / bodygroups / color) to any entity
+function hg.Appearance.ApplyAppearanceToEnt(ent, tbl)
+	if not IsValid(ent) or not tbl then return end
+	local APmodule = hg.Appearance
+	local tMdl = APmodule.PlayerModels[1][tbl.AModel] or APmodule.PlayerModels[2][tbl.AModel]
+	if not tMdl then
+		local mdl = ent:GetModel()
+		tMdl = APmodule.FuckYouModels and (APmodule.FuckYouModels[1][mdl] or APmodule.FuckYouModels[2][mdl])
+	end
+	if not istable(tMdl) then return end
+
+	local sexIdx = tMdl.sex and 2 or 1
+
+	if tbl.AColor then
+		ent:SetNWVector("PlayerColor", Vector(tbl.AColor.r / 255, tbl.AColor.g / 255, tbl.AColor.b / 255))
+	end
+	if tbl.AName then
+		ent:SetNWString("PlayerName", tbl.AName)
+	end
+
+	ent:SetSubMaterial()
+
+	local mats = ent:GetMaterials()
+	tbl.AClothes = tbl.AClothes or {}
+	for k, v in pairs(tMdl.submatSlots) do
+		local slot = 1
+		for i = 1, #mats do
+			if mats[i] == v then slot = i - 1 break end
+		end
+		ent:SetSubMaterial(slot, APmodule.Clothes[sexIdx][tbl.AClothes[k]] or APmodule.Clothes[sexIdx]["normal"])
+		ent:SetNWString("Colthes" .. k, tbl.AClothes[k] or "normal")
+	end
+
+	for i = 1, #mats do
+		if APmodule.FacemapsSlots[mats[i]] and APmodule.FacemapsSlots[mats[i]][tbl.AFacemap] then
+			ent:SetSubMaterial(i - 1, APmodule.FacemapsSlots[mats[i]][tbl.AFacemap])
+		end
+	end
+
+	local bodygroups = ent:GetBodyGroups()
+	tbl.ABodygroups = tbl.ABodygroups or {}
+	for k, v in ipairs(bodygroups) do
+		if not v.name then continue end
+		if not tbl.ABodygroups[v.name] then continue end
+		if not APmodule.Bodygroups[v.name] then continue end
+		if not APmodule.Bodygroups[v.name][sexIdx] then continue end
+		local bg = APmodule.Bodygroups[v.name][sexIdx][tbl.ABodygroups[v.name]]
+		if not bg then continue end
+		for i = 0, #v.submodels do
+			if bg[1] ~= v.submodels[i] then continue end
+			ent:SetBodygroup(k - 1, i)
+		end
+	end
+end
+
 -- Render things
 
 local whitelist = {

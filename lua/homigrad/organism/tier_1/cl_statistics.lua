@@ -341,140 +341,133 @@ hook.Add("HUDPaint", "homigrad-organism-debug", function()
 	end
 end)
 
-timeHuy = timeHuy or 0
-local ent = NULL
-local model = "models/Humans/group01/Female_03.mdl"
-local pos = Vector(0,0,0)
-local bones = {}
-local tracePoses,normal = {},Vector(0,0,0)
-local hitBoxs = {}
-local dmg = 0
-local size = 0
-local matpos
-local matang
-if IsValid(csmodel) then
-	csmodel:Remove()
-end
-csmodel = ClientsideModel("models/Humans/group01/Female_03.mdl",RENDERMODE_TRANSCOLOR)
-csmodel:SetNoDraw(true)
-
-local function doSkilet()
-	if IsValid(skiletmodel) then
-		skiletmodel:Remove()
-	end
-	skiletmodel = ClientsideModel("models/player/skeleton.mdl",RENDERMODE_TRANSCOLOR)
-	skiletmodel:SetNoDraw(true)
-	skiletmodel:SetSkin(2)
-	--skiletmodel:SetBodyGroups("1110")
-	skiletmodel:AddEffects( EF_BONEMERGE )
-	skiletmodel:SetParent(csmodel)
-end
-
-doSkilet()
-
---skiletmodel:ManipulateBoneAngles( 0, Angle(0,0,0), false )
-
-if IsValid(bulletmodel) then
-	bulletmodel:Remove()
-end
-bulletmodel = ClientsideModel("models/bullets/w_pbullet1.mdl",RENDERMODE_TRANSCOLOR)
-bulletmodel:SetNoDraw(true)
-
-local organs,boxs,pos,sphere,posa
-local angle = Angle(25,0,0)
-
-local localpos,localang,bone = Vector(0,0,0),Angle(0,0,0),0
-
-local traveltime = 5
-local hitorgans = {}
 local angZero = Angle(0,0,0)
 local vecFull = Vector(1,1,1)
-local bone0 = Vector()
-local ricochets = {}
-local hg_max_hitshow = ConVarExists("hg_max_hitshow") and GetConVar("hg_max_hitshow") or CreateClientConVar("hg_max_hitshow", 40, true, false, "how many hits to track on your local pc (very bad idea to put this to more than 60)", 0, 150)
---mb make userinfo?
+local defaultModel = "models/Humans/group01/Female_03.mdl"
+
 hg.hits = hg.hits or {}
-local iter = 1
-local inf
-local attacker
-local function startPlayingHit(i)
-	local i = iter
-	tracePoses = hg.hits[i].tracePoses
-	ent = hg.hits[i].ent
-	hitBoxs = hg.hits[i].hitBoxs
-	dmg = hg.hits[i].dmg
-	size = hg.hits[i].size
+local hg_max_hitshow = ConVarExists("hg_max_hitshow") and GetConVar("hg_max_hitshow") or CreateClientConVar("hg_max_hitshow", 40, true, false, "how many hits to track on your local pc (very bad idea to put this to more than 60)", 0, 150)
 
-	traveltime = hg.hits[i].traveltime
-	attacker = hg.hits[i].att
-	model = hg.hits[i].model
-	bone0 = hg.hits[i].bone0
-	bones = hg.hits[i].bones
-	ricochets = hg.hits[i].ricochets
-	local basebone = hg.hits[i].basebone
-	inf = hg.hits[i].inf
-	if not IsValid(csmodel) or csmodel == nil then
-		csmodel = ClientsideModel("models/Humans/group01/Female_03.mdl",RENDERMODE_TRANSCOLOR)
-		csmodel:SetNoDraw(true)
+local csmodel, skiletmodel, bulletmodel
+local playStartTime = 0
+local curIdx = 1
+local cur = {
+	traveltime = 5,
+	bones = {},
+	tracePoses = {},
+	hitBoxs = {},
+	ricochets = {},
+	hitorgans = {},
+	organs = nil,
+	boxs = nil,
+	size = 0,
+	model = defaultModel,
+	inf = nil,
+	attacker = nil,
+}
+
+local function ensureCsModel()
+	if IsValid(csmodel) then return csmodel end
+	csmodel = ClientsideModel(defaultModel, RENDERMODE_TRANSCOLOR)
+	csmodel:SetNoDraw(true)
+	return csmodel
+end
+
+local function ensureSkiletModel()
+	if IsValid(skiletmodel) then return skiletmodel end
+	skiletmodel = ClientsideModel("models/player/skeleton.mdl", RENDERMODE_TRANSCOLOR)
+	skiletmodel:SetNoDraw(true)
+	skiletmodel:SetSkin(2)
+	skiletmodel:AddEffects(EF_BONEMERGE)
+	skiletmodel:SetParent(ensureCsModel())
+	return skiletmodel
+end
+
+local function ensureBulletModel()
+	if IsValid(bulletmodel) then return bulletmodel end
+	bulletmodel = ClientsideModel("models/bullets/w_pbullet1.mdl", RENDERMODE_TRANSCOLOR)
+	bulletmodel:SetNoDraw(true)
+	return bulletmodel
+end
+
+ensureCsModel()
+ensureSkiletModel()
+ensureBulletModel()
+
+local function clearHits()
+	playStartTime = nil
+	hg.hits = {}
+end
+
+local function playHit(idx)
+	local hit = hg.hits[idx]
+	if not hit then return end
+
+	curIdx = idx
+	cur.tracePoses = hit.tracePoses
+	cur.ent = hit.ent
+	cur.hitBoxs = hit.hitBoxs
+	cur.dmg = hit.dmg
+	cur.size = hit.size
+	cur.traveltime = hit.traveltime
+	cur.attacker = hit.att
+	cur.model = hit.model
+	cur.bone0 = hit.bone0
+	cur.bones = hit.bones
+	cur.ricochets = hit.ricochets
+	cur.inf = hit.inf
+
+	local mdl = ensureCsModel()
+	mdl:SetPos(hit.bone0:GetTranslation())
+	mdl:SetModel(hit.model)
+	if hit.curAppearance and hg.Appearance and hg.Appearance.ApplyAppearanceToEnt then
+		hg.Appearance.ApplyAppearanceToEnt(mdl, hit.curAppearance)
 	end
-	csmodel:SetPos(bone0:GetTranslation())
-	csmodel:SetModel(model)
-	csmodel.armors = hg.hits[i].armors or {}
-	organs = hg.organism.GetHitBoxOrgans(model, csmodel)
-	
-	boxs,pos,sphere = hg.organism.ShootMatrix(csmodel, organs)
-	if boxs == nil then return end
+	mdl.armors = hit.armors or {}
 
-	hitorgans = {}
-	for i = 1,#boxs do
-		local box = boxs[i]
-		local organ = box[6] and organs[box[6]][box[7]]
+	cur.organs = hg.organism.GetHitBoxOrgans(hit.model, mdl)
+	cur.boxs, cur.pos, cur.sphere = hg.organism.ShootMatrix(mdl, cur.organs)
+	if cur.boxs == nil then return end
 
-		if organ and hitBoxs[i] then hitorgans[i] = organ[1] end
+	cur.hitorgans = {}
+	for i = 1, #cur.boxs do
+		local box = cur.boxs[i]
+		local organ = box[6] and cur.organs[box[6]][box[7]]
+		if organ and cur.hitBoxs[i] then cur.hitorgans[i] = organ[1] end
 	end
 
-	for i,func in pairs(csmodel:GetCallbacks("BuildBonePositions")) do
-		csmodel:RemoveCallback("BuildBonePositions",i)
+	for cbId in pairs(mdl:GetCallbacks("BuildBonePositions")) do
+		mdl:RemoveCallback("BuildBonePositions", cbId)
 	end
 
-	csmodel:AddCallback("BuildBonePositions",function()
-		for i = 0,csmodel:GetBoneCount() do
-			if not bones[i] or not csmodel:GetBoneMatrix(i) then continue end
-			bones[i]:SetScale(vecFull)
-			csmodel:SetBoneMatrix(i,bones[i])
+	mdl:AddCallback("BuildBonePositions", function()
+		for i = 0, mdl:GetBoneCount() do
+			if not cur.bones[i] or not mdl:GetBoneMatrix(i) then continue end
+			cur.bones[i]:SetScale(vecFull)
+			mdl:SetBoneMatrix(i, cur.bones[i])
 		end
 	end)
 
-	timeHuy = 0
+	playStartTime = 0
 end
 
-hook.Add("Player_Death","wowww",function(ply)
-	if ply != LocalPlayer() or #hg.hits == 0 then return end
-
-	iter = #hg.hits
-	if iter > 0 then
-		startPlayingHit(iter)
-	end
+hook.Add("Player_Death", "wowww", function(ply)
+	if ply ~= LocalPlayer() or #hg.hits == 0 then return end
+	playHit(#hg.hits)
 end)
 
-local snd1
-local snd2
-
-hook.Add("Player Spawn","removehuys",function(ply)
-	if ply != LocalPlayer() then return end
+hook.Add("Player Spawn", "removehuys", function(ply)
+	if ply ~= LocalPlayer() then return end
 	hg.hits = {}
 end)
 
-net.Receive("tracePosesSend", function()
-	if not hg_xray:GetBool() then return end
+local function decodeHit()
 	local tracePoses = net.ReadTable()
 	local ent = net.ReadEntity()
 	local hitBoxs = net.ReadTable()
-	local dmg = net.ReadFloat()--actually pen
+	local dmg = net.ReadFloat() -- actually pen
 	local size = net.ReadFloat()
-
-	local traveltime = math.min(dmg,8)
-
+	local traveltime = math.min(dmg, 8)
 	local bone = net.ReadInt(32)
 	local matpos = net.ReadVector()
 	local matang = net.ReadAngle()
@@ -483,338 +476,331 @@ net.Receive("tracePosesSend", function()
 	local inf = net.ReadString()
 	local att = net.ReadString()
 	local basebone = net.ReadMatrix()
+	local curAppearance = net.ReadTable()
 
-	-- timer.Simple(0.1,function()
-		local ent = hg.GetCurrentCharacter(ent) or ent
-		if not basebone then return end
+	ent = hg.GetCurrentCharacter(ent) or ent
+	if not basebone or not IsValid(ent) then return end
 
-		local _,addang = WorldToLocal(matpos,matang,basebone:GetTranslation(),basebone:GetAngles())
-		
-		bones = {}
-
-		local addpos2 = (bone0:GetTranslation() - ent:GetBoneMatrix(0):GetTranslation())
-
-		for i = 0,ent:GetBoneCount() do
-			bones[i] = ent:GetBoneMatrix(i)
-			if bones[i] then
-				bones[i]:SetScale(vecFull)
-				bones[i]:SetTranslation(bones[i]:GetTranslation() + addpos2)
-			end
+	local bones = {}
+	for i = 0, ent:GetBoneCount() do
+		bones[i] = ent:GetBoneMatrix(i)
+		if bones[i] then
+			bones[i]:SetScale(vecFull)
+			bones[i]:SetTranslation(bones[i]:GetTranslation())
 		end
+	end
 
-		local addpos = -(matpos - bones[bone]:GetTranslation())
+	if not bones[bone] then return end
+	local addpos = -(matpos - bones[bone]:GetTranslation())
 
-		local ricochets = {}
-		for i = #tracePoses,2,-1 do
-			local str = tracePoses[i]
-			debugoverlay.Line(tracePoses[i], tracePoses[i - 1], 6, color_white, true)
-			if istable(str) then table.insert(ricochets,str) table.remove(tracePoses,i) continue end
-			tracePoses[i] = Vector(str)
-
-			local localpos,localang = WorldToLocal(tracePoses[i],basebone:GetAngles(),matpos,matang)
-			localpos:Rotate(localang)
-			tracePoses[i] = LocalToWorld(localpos,angZero,matpos,matang)
-			
-			tracePoses[i]:Add(addpos)
+	local ricochets = {}
+	for i = #tracePoses, 2, -1 do
+		local str = tracePoses[i]
+		debugoverlay.Line(tracePoses[i], tracePoses[i - 1], 6, color_white, true)
+		if istable(str) then
+			table.insert(ricochets, str)
+			table.remove(tracePoses, i)
+			continue
 		end
+		tracePoses[i] = Vector(str)
 
-		local ricoshits = {}
-		for i,tbl in ipairs(ricochets) do
-			ricoshits[tbl[2]] = tbl[1]
-		end
+		local localpos, localang = WorldToLocal(tracePoses[i], basebone:GetAngles(), matpos, matang)
+		localpos:Rotate(localang)
+		tracePoses[i] = LocalToWorld(localpos, angZero, matpos, matang)
+		tracePoses[i]:Add(addpos)
+	end
 
-		if #hg.hits >= hg_max_hitshow:GetInt() then table.remove(hg.hits,1) end
-		
-		local armors = table.Copy((hg.RagdollOwner(ent) or ent):GetNetVar("Armor"))
+	local ricoshits = {}
+	for _, tbl in ipairs(ricochets) do
+		ricoshits[tbl[2]] = tbl[1]
+	end
 
-		table.insert(hg.hits,{
-			tracePoses = tracePoses,
-			ent = ent,
-			hitBoxs = hitBoxs,
-			dmg = dmg,
-			size = size,
+	if #hg.hits >= hg_max_hitshow:GetInt() then table.remove(hg.hits, 1) end
 
-			traveltime = traveltime,
+	local armors = table.Copy((hg.RagdollOwner(ent) or ent):GetNetVar("Armor"))
 
-			att = att,
-			model = model,
-			bone0 = bone0,
-			bones = bones,
-			basebone = basebone,
-			ricochets = ricoshits,
-			armors = armors,
-			inf = inf,
-		})
-	-- end)
+	table.insert(hg.hits, {
+		tracePoses = tracePoses,
+		ent = ent,
+		hitBoxs = hitBoxs,
+		dmg = dmg,
+		size = size,
+		traveltime = traveltime,
+		att = att,
+		model = model,
+		bone0 = bone0,
+		bones = bones,
+		basebone = basebone,
+		ricochets = ricoshits,
+		armors = armors,
+		inf = inf,
+		curAppearance = curAppearance,
+	})
+end
+
+net.Receive("tracePosesSend", function()
+	if not hg_xray:GetBool() then return end
+	decodeHit()
 end)
 
-function draw.RotatedText( text, x, y, font, color, ang)
-	render.PushFilterMag( TEXFILTER.ANISOTROPIC )
-	render.PushFilterMin( TEXFILTER.ANISOTROPIC )
+function draw.RotatedText(text, x, y, font, color, ang)
+	render.PushFilterMag(TEXFILTER.ANISOTROPIC)
+	render.PushFilterMin(TEXFILTER.ANISOTROPIC)
 
 	local m = Matrix()
-	m:Translate( Vector( x, y, 0 ) )
-	m:Rotate( Angle( 0, ang, 0 ) )
+	m:Translate(Vector(x, y, 0))
+	m:Rotate(Angle(0, ang, 0))
 
-	surface.SetFont( font )
-	local w, h = surface.GetTextSize( text )
+	surface.SetFont(font)
+	local w, h = surface.GetTextSize(text)
 
-	m:Translate( -Vector( w / 2, h / 2, 0 ) )
+	m:Translate(-Vector(w / 2, h / 2, 0))
 
-	cam.PushModelMatrix( m )
-		draw.DrawText( text, font, 0, 0, color )
+	cam.PushModelMatrix(m)
+		draw.DrawText(text, font, 0, 0, color)
 	cam.PopModelMatrix()
 
 	render.PopFilterMag()
 	render.PopFilterMin()
 end
 
-local sizeX, sizeY = ScrW(), ScrH()
-local posX, posY = 0, 0
- 
+local function getReplayProgress()
+	if not playStartTime then return nil end
+	local endTime = playStartTime + cur.traveltime
+	if endTime <= CurTime() then return nil end
+
+	local tbl = cur.tracePoses
+	if not tbl or #tbl < 2 then return nil end
+
+	local remaining = endTime - CurTime()
+	local part = 1 - remaining / cur.traveltime
+	local alpha = remaining / 0.2
+	local alpha2 = math.Clamp(1 - remaining / 0.5, 0, 1)
+
+	local baseIdx = math.floor(#tbl * part)
+	local firstpoint = tbl[math.min(baseIdx + 1, #tbl)]
+	local secondpoint = tbl[math.min(baseIdx + 2, #tbl)]
+	local nextfirstpoint = tbl[math.min(baseIdx + 2, #tbl)]
+	local nextsecondpoint = tbl[math.min(baseIdx + 3, #tbl)]
+
+	if not firstpoint or not secondpoint or not nextfirstpoint or not nextsecondpoint then return nil end
+
+	local frac = (#tbl * part) - baseIdx
+	local point1 = LerpVector(frac, firstpoint, nextfirstpoint)
+	local point2 = LerpVector(frac, secondpoint, nextsecondpoint)
+
+	return {
+		tbl = tbl,
+		part = part,
+		alpha = alpha,
+		alpha2 = alpha2,
+		firstpoint = firstpoint,
+		secondpoint = secondpoint,
+		nextfirstpoint = nextfirstpoint,
+		nextsecondpoint = nextsecondpoint,
+		point1 = point1,
+		point2 = point2,
+	}
+end
 
 function hg.DeathCamAvailable(ply)
-	return timeHuy and ((timeHuy + traveltime) > CurTime()) and #hg.hits > 0
+	return playStartTime and ((playStartTime + cur.traveltime) > CurTime()) and #hg.hits > 0
 end
 
 local delta = 0
-hook.Add("CreateMove","delta-counting-hg",function(cmd)
+hook.Add("CreateMove", "delta-counting-hg", function(cmd)
 	delta = cmd:GetMouseWheel()
 end)
 
-local len = 50
-function hg.DeathCam(ply,origin,angles,fov,znear,zfar)
-	 
-	if not lply:Alive() then
-		len = math.Clamp(len - delta * 10,10,50)
-		if timeHuy == 0 then timeHuy = CurTime() end
-		if lply:KeyDown(IN_RELOAD) then timeHuy = nil hg.hits = {} end
-		if timeHuy and ((timeHuy + traveltime) > CurTime()) then
-			local tbl = tracePoses
+local camLen = 50
+function hg.DeathCam(ply, origin, angles, fov, znear, zfar)
+	if lply:Alive() then return end
 
-			local part = 1 - ((timeHuy + traveltime) - CurTime()) / traveltime
-			local alpha = ((timeHuy + traveltime) - CurTime()) / 0.2
-			local alpha2 = math.Clamp(1 - ((timeHuy + traveltime) - CurTime()) / 0.5,0,1)
-					
-			local firstpoint = tbl[math.min(math.floor(#tbl * part) + 1,#tbl)]
-			local secondpoint = tbl[math.min(math.floor(#tbl * part) + 2,#tbl)]
+	camLen = math.Clamp(camLen - delta * 10, 10, 50)
+	if playStartTime == 0 then playStartTime = CurTime() end
+	if lply:KeyDown(IN_RELOAD) then clearHits() end
 
-			local nextfirstpoint = tbl[math.min(math.floor(#tbl * part) + 2,#tbl)]
-			local nextsecondpoint = tbl[math.min(math.floor(#tbl * part) + 3,#tbl)]
-			
-			if not firstpoint or not secondpoint or not nextfirstpoint or not nextsecondpoint then return end
+	local rp = getReplayProgress()
+	if not rp then return end
 
-			local point1 = LerpVector((#tbl * part) - math.floor(#tbl * part),firstpoint,nextfirstpoint)
-			local point2 = LerpVector((#tbl * part) - math.floor(#tbl * part),secondpoint,nextsecondpoint)
-
-			local view = {
-				origin = point2 + angles:Forward()*-len,
-				angles = angles,
-				fov = fov,
-				drawviewer = true
-			}
-
-			return view
-		end
-	end
+	return {
+		origin = rp.point2 + angles:Forward() * -camLen,
+		angles = angles,
+		fov = fov,
+		drawviewer = true,
+	}
 end
 
 local weight = ScreenScale(100)
-local colblack = Color(0,0,0,255)
-local colyellow = Color(255,217,0)
-local colred = Color(135,0,0,255)
-local attpressed
-local attpressed2
+local colblack = Color(0, 0, 0, 255)
+local colyellow = Color(255, 217, 0)
+local colred = Color(135, 0, 0, 255)
+local colblacka = Color(22, 22, 22, 255)
 local mathuy = Material("color")
 local meat = Material("models/flesh")
+local attpressed, attpressed2
+local angle = Angle(25, 0, 0)
 
-surface.CreateFont( "DefaultFixedDropShadowBig",{
+surface.CreateFont("DefaultFixedDropShadowBig", {
 	font = "DefaultFixedDropShadow",
 	size = ScreenScale(12),
 })
-local colblacka = Color(22,22,22,255)
-hook.Add("HUDPaint","homigrad-wound-debug",function()
-	if not lply:Alive() then
-		if timeHuy == 0 then timeHuy = CurTime() end
 
-		if lply:KeyDown(IN_RELOAD) then timeHuy = nil hg.hits = {} end
+local function handleHitNav()
+	if (lply:KeyDown(IN_ATTACK2) or lply:KeyDown(IN_MOVERIGHT)) and playStartTime and #hg.hits ~= 0 then
+		if not attpressed then
+			local next_ = curIdx + 1
+			playHit(next_ > #hg.hits and 1 or next_)
+			attpressed = true
+		end
+	else
+		attpressed = nil
+	end
 
-		if (lply:KeyDown(IN_ATTACK2) or lply:KeyDown(IN_MOVERIGHT)) and timeHuy and #hg.hits != 0 then
-			if not attpressed then
-				local next_ = iter + 1
-				iter = next_ > #hg.hits and 1 or next_
-				startPlayingHit(i)
-				attpressed = true
+	if (lply:KeyDown(IN_ATTACK) or lply:KeyDown(IN_MOVELEFT)) and playStartTime and #hg.hits ~= 0 then
+		if not attpressed2 then
+			local next_ = curIdx - 1
+			playHit(next_ < 1 and #hg.hits or next_)
+			attpressed2 = true
+		end
+	else
+		attpressed2 = nil
+	end
+end
+
+hook.Add("HUDPaint", "homigrad-wound-debug", function()
+	if lply:Alive() then return end
+
+	if playStartTime == 0 then playStartTime = CurTime() end
+	if lply:KeyDown(IN_RELOAD) then clearHits() end
+
+	handleHitNav()
+
+	local rp = getReplayProgress()
+	if not rp then return end
+
+	local mdl = ensureCsModel()
+	local skilet = ensureSkiletModel()
+	local hit = hg.hits[curIdx]
+	if not hit then return end
+
+	colblack.a = 255 * rp.alpha
+	angle = angle + Angle(0, 0.25, 0)
+
+	cam.Start3D()
+		render.SetStencilWriteMask(0xFF)
+		render.SetStencilTestMask(0xFF)
+		render.SetStencilReferenceValue(0)
+		render.SetStencilCompareFunction(STENCIL_ALWAYS)
+		render.SetStencilPassOperation(STENCIL_KEEP)
+		render.SetStencilFailOperation(STENCIL_KEEP)
+		render.SetStencilZFailOperation(STENCIL_KEEP)
+		render.ClearStencil()
+
+		render.SetStencilEnable(true)
+		render.SetStencilReferenceValue(1)
+		render.SetStencilCompareFunction(STENCIL_ALWAYS)
+		render.SetStencilPassOperation(STENCIL_REPLACE)
+
+		mdl:DrawModel()
+		if hit.curAppearance and hit.curAppearance.AAttachments then
+			for _, vv in pairs(hit.curAppearance.AAttachments) do
+				if vv == "none" then continue end
+				DrawAccesories(mdl, mdl, vv, hg.Accessories[vv], false, true)
 			end
-		else
-			attpressed = nil
 		end
 
-		if (lply:KeyDown(IN_ATTACK) or lply:KeyDown(IN_MOVELEFT)) and timeHuy and #hg.hits != 0 then
-			if not attpressed2 then
-				local next_ = iter - 1
-				iter = next_ < 1 and #hg.hits or next_
-				startPlayingHit(i)
-				attpressed2 = true
-			end
-		else
-			attpressed2 = nil
+		render.SetStencilCompareFunction(STENCIL_EQUAL)
+		render.SetStencilPassOperation(STENCIL_INCR)
+		render.SetStencilZFailOperation(STENCIL_INCR)
+
+		local huyalpha = rp.alpha * 0.2 / cur.traveltime
+		huyalpha = huyalpha > 0.2 and 1 or huyalpha / 0.2
+		render.SetMaterial(mathuy)
+		render.DrawSphere(rp.point2, 7 * huyalpha, 50, 50, colblacka)
+
+		render.SetStencilReferenceValue(2)
+		render.SetStencilPassOperation(STENCIL_KEEP)
+		render.SetStencilZFailOperation(STENCIL_KEEP)
+		render.SetStencilCompareFunction(STENCIL_EQUAL)
+		render.ClearBuffersObeyStencil(0, 0, 0, 0, true)
+
+		cam.Start2D()
+			surface.SetDrawColor(155, 0, 0, 15)
+			surface.DrawTexturedRect(0, 0, ScrW(), ScrH(), 0)
+		cam.End2D()
+
+		skilet:DrawModel() -- надо доделать, когда разберусь в стенсилах // а все уже, работает
+
+		cam.Start2D()
+			surface.SetDrawColor(155, 0, 0, 95)
+			surface.DrawTexturedRect(0, 0, ScrW(), ScrH(), 0)
+		cam.End2D()
+
+		cur.organs = hg.organism.GetHitBoxOrgans(cur.model, mdl)
+		cur.boxs, cur.pos, cur.sphere = hg.organism.ShootMatrix(mdl, cur.organs)
+
+		for i = 1, #cur.boxs do
+			local box = cur.boxs[i]
+			local organ = box[6] and cur.organs[box[6]][box[7]]
+			if not cur.hitBoxs[i] then continue end
+
+			local col = Color((organ and organ[6] or white):Unpack())
+			col.a = 50
+			render.DrawWireframeBox(box[1], box[2], box[3], box[4], col, false)
 		end
-		
-		if timeHuy and ((timeHuy + traveltime) > CurTime()) then
-			local tbl = tracePoses
-			
-			--[[snd1 = snd1 or CreateSound(csmodel,"player/general/flesh_burn.wav")
-			snd2 = snd2 or CreateSound(csmodel,"ambient/wind/windgust.wav")
-			
-			if not snd1:IsPlaying() then
-				snd1:Play()
-			end]]--
 
-			local part = 1 - ((timeHuy + traveltime) - CurTime()) / traveltime
-			local alpha = ((timeHuy + traveltime) - CurTime()) / 0.2
-			local alpha2 = math.Clamp(1 - ((timeHuy + traveltime) - CurTime()) / 0.5,0,1)	
-					
-			local firstpoint = tbl[math.min(math.floor(#tbl * part) + 1,#tbl)]
-			local secondpoint = tbl[math.min(math.floor(#tbl * part) + 2,#tbl)]
+		render.SetStencilEnable(false)
 
-			local nextfirstpoint = tbl[math.min(math.floor(#tbl * part) + 2,#tbl)]
-			local nextsecondpoint = tbl[math.min(math.floor(#tbl * part) + 3,#tbl)]
-			
-			if not firstpoint or not secondpoint or not nextfirstpoint or not nextsecondpoint then return end
-			
-			local point1 = LerpVector((#tbl * part) - math.floor(#tbl * part),firstpoint,nextfirstpoint)
-			local point2 = LerpVector((#tbl * part) - math.floor(#tbl * part),secondpoint,nextsecondpoint)
-			colblack.a = 255 * alpha
-			--draw.RoundedBox(0,posX,posY,sizeX,sizeY,colblack)
-			angle = angle + Angle(0,0.25,0)
-			
-			cam.Start3D()
-			
-				render.SetStencilWriteMask( 0xFF )
-				render.SetStencilTestMask( 0xFF )
-				render.SetStencilReferenceValue( 0 )
-				render.SetStencilCompareFunction( STENCIL_ALWAYS )
-				render.SetStencilPassOperation( STENCIL_KEEP )
-				render.SetStencilFailOperation( STENCIL_KEEP )
-				render.SetStencilZFailOperation( STENCIL_KEEP )
-				render.ClearStencil()
-				
-				render.SetStencilEnable( true )
-				render.SetStencilReferenceValue( 1 )
-				render.SetStencilCompareFunction( STENCIL_ALWAYS )
-				render.SetStencilPassOperation( STENCIL_REPLACE )
-				--render.SetStencilZFailOperation( STENCIL_DECR )
+		for i = 1, #cur.boxs do
+			local box = cur.boxs[i]
+			local organ = box[6] and cur.organs[box[6]][box[7]]
+			if not cur.hitBoxs[i] then continue end
 
-				csmodel:DrawModel()
-
-				render.SetStencilCompareFunction( STENCIL_EQUAL )
-				render.SetStencilPassOperation( STENCIL_INCR )
-				render.SetStencilZFailOperation( STENCIL_INCR )
-				local huyalpha = alpha * 0.2 / traveltime
-				huyalpha = huyalpha > 0.2 and 1 or huyalpha / 0.2
-				render.SetMaterial(mathuy)
-				render.DrawSphere(point2,7 * huyalpha,50,50,colblacka)
-				
-				render.SetStencilReferenceValue( 2 )
-				--bulletmodel:DrawModel()
-
-				render.SetStencilReferenceValue( 2 )
-				render.SetStencilPassOperation( STENCIL_KEEP )
-				render.SetStencilZFailOperation( STENCIL_KEEP )
-				render.SetStencilCompareFunction( STENCIL_EQUAL )
-				render.ClearBuffersObeyStencil( 0, 0, 0, 0, true )
-
+			if organ and cur.hitorgans[i] then
 				cam.Start2D()
-					surface.SetDrawColor(155,0,0,15)
-					surface.DrawTexturedRect(0,0,ScrW(),ScrH(),0)
+					draw.SimpleText(hg.organism.translationTbl[organ[1]] or organ[1], "HomigradFontSmall",
+						box[1]:ToScreen().x + math.sin(CurTime() % i) ^ 3 * (5 % i),
+						box[1]:ToScreen().y + math.cos(CurTime() % i) * (5 % i),
+						organ[6])
 				cam.End2D()
-				if not IsValid(skiletmodel) or not isentity(skiletmodel) then
-					doSkilet()
-				end
-				skiletmodel:DrawModel() // надо доделать, когда разберусь в стенсилах // а все уже, работает
-				cam.Start2D()
-					surface.SetDrawColor(155,0,0,95)
-					surface.DrawTexturedRect(0,0,ScrW(),ScrH(),0)
-				cam.End2D()
-
-				organs = hg.organism.GetHitBoxOrgans(model, csmodel)
-				boxs,pos,sphere = hg.organism.ShootMatrix(csmodel, organs)
-
-				--local endPos, hitBoxs2, inputHole, outputHole = hg.organism.Trace(point1, point2 - point1, boxs, pos, sphere, organs, nil, hg.organism.Trace_Bullet, organs)
-				
-				for i = 1,#boxs do
-					local box = boxs[i]
-					local organ = box[6] and organs[box[6]][box[7]]
-					if not hitBoxs[i] then continue end
-					
-					local col = Color((organ and organ[6] or white):Unpack())
-					col.a = 50
-					render.DrawWireframeBox(box[1], box[2], box[3], box[4], col, false)
-				end
-				
-				render.SetStencilEnable( false )
-
-				for i = 1,#boxs do
-					local box = boxs[i]
-					local organ = box[6] and organs[box[6]][box[7]]
-					if not hitBoxs[i] then continue end
-
-					if organ and hitorgans[i] then
-						cam.Start2D()
-							draw.SimpleText(hg.organism.translationTbl[organ[1]] or organ[1], "HomigradFontSmall", box[1]:ToScreen().x + math.sin(CurTime()%(i))^3 * (5%i),box[1]:ToScreen().y + math.cos(CurTime()%(i)) * (5%i), organ and organ[6])
-						cam.End2D()
-					end
-					
-				end
-				white.r = 255
-				white.g = 255
-				white.b = 255
-				white.a = 255
-
-				render.SetColorMaterial() 
-				render.DrawBox(nextfirstpoint, (nextsecondpoint - nextfirstpoint):Angle(), -Vector(0,size,size),Vector((nextsecondpoint - nextfirstpoint):Length(),size * 0.9,size * 0.9),colyellow)
-				render.DrawWireframeBox(nextfirstpoint, (nextsecondpoint - nextfirstpoint):Angle(), -Vector(0,size * 0.9,size * 0.9),Vector((nextsecondpoint - nextfirstpoint):Length(),size * 0.9,size * 0.9),colyellow)
-				
-				for i=1,#tbl-1 do
-					render.DrawWireframeBox(tbl[i], (tbl[i+1] - tbl[i]):Angle(), -Vector(0,size * 0.9,size * 0.9),Vector((tbl[i+1] - tbl[i]):Length(),size * 0.9,size * 0.9),Color(0,0,0,100))
-				end
-
-				--bulletmodel:SetPos(point2 - (point2 - point1):GetNormalized() * 0.5)
-				--bulletmodel:SetAngles((nextsecondpoint - nextfirstpoint):Angle())
-				--bulletmodel:SetModelScale(0.4)
-				--bulletmodel:DrawModel()
-				--render.DrawLine(point1,point2,color_white,false)
-				
-			cam.End3D()
-			
-			draw.SimpleText("R to skip.", "HomigradFontBig", ScrW() / 3 * 2, ScrH() / 7, color_white)
-			draw.SimpleText("Hit "..tostring(iter).." of "..tostring(#hg.hits).." by "..inf.." from "..attacker, "HomigradFontBig", ScrW() / 3 * 2, ScrH() / 10, color_white)
-			
-			local countedorgans = {}
-			local organs2 = {}
-	
-			for i, text in pairs(hitorgans) do
-				if countedorgans[text] then continue end
-				countedorgans[text] = true
-				
-				if ricochets[i] then
-					table.insert(organs2,ricochets[i]..tostring(hg.organism.translationTbl[hitorgans[i]] or hitorgans[i]))
-				else
-					table.insert(organs2,"Penetrated "..text)
-				end
 			end
-			
-			for i, text in ipairs(organs2) do
-				local y = ScreenScale(200) + ScreenScale((i - 1) * (16))
-				draw.RoundedBox(0, ScreenScale(10), y, weight * 1.5, ScreenScale(16), littleblack)
-	
-				draw.RoundedBox(1, ScreenScale(11), y, weight * 1.5 - 5, ScreenScale(16), color_black)
-				draw.SimpleText((hg.organism.translationTbl[text] or text), "HomigradFont", ScreenScale(12), y, white)
-			end
-
-			-- colred.a = 255 * alpha
-			-- draw.RotatedText("FATAL HIT",posX + 155 ,posY+85,"HomigradFontLarge",colred,15)
 		end
+
+		white.r, white.g, white.b, white.a = 255, 255, 255, 255
+
+		render.SetColorMaterial()
+		local segDir = (rp.nextsecondpoint - rp.nextfirstpoint):Angle()
+		local segLen = (rp.nextsecondpoint - rp.nextfirstpoint):Length()
+		render.DrawBox(rp.nextfirstpoint, segDir, -Vector(0, cur.size, cur.size), Vector(segLen, cur.size * 0.9, cur.size * 0.9), colyellow)
+		render.DrawWireframeBox(rp.nextfirstpoint, segDir, -Vector(0, cur.size * 0.9, cur.size * 0.9), Vector(segLen, cur.size * 0.9, cur.size * 0.9), colyellow)
+
+		for i = 1, #rp.tbl - 1 do
+			local a, b = rp.tbl[i], rp.tbl[i + 1]
+			render.DrawWireframeBox(a, (b - a):Angle(), -Vector(0, cur.size * 0.9, cur.size * 0.9), Vector((b - a):Length(), cur.size * 0.9, cur.size * 0.9), Color(0, 0, 0, 100))
+		end
+	cam.End3D()
+
+	draw.SimpleText("R to skip.", "HomigradFontBig", ScrW() / 3 * 2, ScrH() / 7, color_white)
+	draw.SimpleText("Hit " .. tostring(curIdx) .. " of " .. tostring(#hg.hits) .. " by " .. tostring(cur.inf) .. " from " .. tostring(cur.attacker), "HomigradFontBig", ScrW() / 3 * 2, ScrH() / 10, color_white)
+
+	local countedorgans = {}
+	local organs2 = {}
+	for i, text in pairs(cur.hitorgans) do
+		if countedorgans[text] then continue end
+		countedorgans[text] = true
+
+		if cur.ricochets[i] then
+			table.insert(organs2, cur.ricochets[i] .. tostring(hg.organism.translationTbl[cur.hitorgans[i]] or cur.hitorgans[i]))
+		else
+			table.insert(organs2, "Penetrated " .. text)
+		end
+	end
+
+	for i, text in ipairs(organs2) do
+		local y = ScreenScale(200) + ScreenScale((i - 1) * 16)
+		draw.RoundedBox(0, ScreenScale(10), y, weight * 1.5, ScreenScale(16), littleblack)
+		draw.RoundedBox(1, ScreenScale(11), y, weight * 1.5 - 5, ScreenScale(16), color_black)
+		draw.SimpleText((hg.organism.translationTbl[text] or text), "HomigradFont", ScreenScale(12), y, white)
 	end
 end)

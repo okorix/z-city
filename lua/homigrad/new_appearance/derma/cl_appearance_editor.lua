@@ -366,43 +366,16 @@ function PANEL:PostInit()
         local tbl = main.AppearanceTable
         tMdl = APmodule.PlayerModels[1][tbl.AModel] or APmodule.PlayerModels[2][tbl.AModel]
 
-        Entity:SetNWVector("PlayerColor",Vector(tbl.AColor.r / 255, tbl.AColor.g / 255, tbl.AColor.b / 255))
         Entity:SetAngles(Entity.Angles)
         Entity:SetSequence(Entity:LookupSequence("idle_suitcase"))
-        Entity:SetSubMaterial()
         self:SetCamPos( Vector( 100, 0, 55 * (self.OffsetY or 1) ) )
         if Entity:GetModel() != tMdl.mdl then
             Entity:SetModel(tMdl.mdl)
             self:SetModel(tMdl.mdl)
             tbl.AFacemap = "Default"
         end
-        --print(tMdl.mdl)
 
-        local mats = Entity:GetMaterials()
-        for k, v in SortedPairs(tMdl.submatSlots) do
-            local slot = 1
-            for i = 1, #mats do
-                if mats[i] == v then slot = i-1 break end
-            end
-            Entity:SetSubMaterial(slot, hg.Appearance.Clothes[tMdl.sex and 2 or 1][tbl.AClothes[k]] or hg.Appearance.Clothes[tMdl.sex and 2 or 1]["normal"] )
-            Entity:SetNWString("Colthes" .. k,tbl.AClothes[k])
-        end
-        for i = 1, #mats do
-            if hg.Appearance.FacemapsSlots[mats[i]] and hg.Appearance.FacemapsSlots[mats[i]][tbl.AFacemap] then
-                Entity:SetSubMaterial(i - 1, hg.Appearance.FacemapsSlots[mats[i]][tbl.AFacemap])
-            end
-        end
-        local bodygroups = Entity:GetBodyGroups()
-        tbl.ABodygroups = tbl.ABodygroups or {}
-        for k, v in SortedPairs(bodygroups) do
-            if !tbl.ABodygroups[v.name] then continue end
-            for i = 0, #v.submodels do
-                local b = v.submodels[i]
-                if not hg.Appearance.Bodygroups[v.name][tMdl.sex and 2 or 1][tbl.ABodygroups[v.name]] then continue end
-                if hg.Appearance.Bodygroups[v.name][tMdl.sex and 2 or 1][tbl.ABodygroups[v.name]][1] != b then continue end
-                Entity:SetBodygroup(k-1,i)
-            end
-        end
+        hg.Appearance.ApplyAppearanceToEnt(Entity, tbl)
 
         if IsValid(Entity) and Entity:LookupBone("ValveBiped.Bip01_Head1") then
             funpos1x = lookX * 25

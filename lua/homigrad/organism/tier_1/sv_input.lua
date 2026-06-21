@@ -317,6 +317,37 @@ util.AddNetworkString("hg_bloodimpact")
 --util.AddNetworkString("blood particle explode")
 util.AddNetworkString("bloodsquirt")
 
+function hg.SendTracePoses(ent, owner, attacker, inf, tracePoses, hitBoxs, dmgPos, dir, pen, size, physBone)
+	local bone = ent:TranslatePhysBoneToBone(physBone) or 0
+	local mat = ent:GetBoneMatrix(bone)
+
+	table.insert(tracePoses, 1, dmgPos - dir * 100)
+	table.insert(tracePoses, 1, dmgPos - dir * 200)
+
+	local rf = RecipientFilter()
+	if IsValid(owner) and owner:IsPlayer() then rf:AddPlayer(owner) end
+	if IsValid(attacker) and attacker:IsPlayer() then rf:AddPlayer(attacker) end
+
+	local name = (IsValid(attacker) and attacker:IsPlayer()) and attacker:Name() or (IsValid(attacker) and attacker:GetClass() or "Unknown")
+
+	net.Start("tracePosesSend")
+	net.WriteTable(tracePoses)
+	net.WriteEntity(ent)
+	net.WriteTable(hitBoxs)
+	net.WriteFloat(pen)
+	net.WriteFloat(size)
+	net.WriteInt(bone, 32)
+	net.WriteVector(mat:GetTranslation())
+	net.WriteAngle(mat:GetAngles())
+	net.WriteString(ent:GetModel())
+	net.WriteMatrix(ent:GetBoneMatrix(0))
+	net.WriteString(tostring(inf.PrintName or "Unknown"))
+	net.WriteString(tostring(name))
+	net.WriteMatrix(mat)
+	net.WriteTable(ent.CurAppearance or {})
+	net.Send(rf)
+end
+
 local hg_developer = ConVarExists("hg_developer") and GetConVar("hg_developer") or CreateConVar("hg_developer",0,FCVAR_SERVER_CAN_EXECUTE,"Toggle developer mode (enables damage traces)",0,1)
 
 local npcDmg = {
@@ -750,32 +781,7 @@ hook.Add("EntityTakeDamage", "homigrad-damage", function(ent, dmgInfo)
 	end
 
 	if tracePoses then
-		local mat = ent:GetBoneMatrix(ent:TranslatePhysBoneToBone(bone))
-
-		table.insert(tracePoses,1,dmgPos - dir * 100)
-		table.insert(tracePoses,1,dmgPos - dir * 200)
-
-		local rf = RecipientFilter()
-		if org.owner:IsPlayer() then rf:AddPlayer(org.owner) end
-		if dmgInfo:GetAttacker():IsPlayer() then rf:AddPlayer(dmgInfo:GetAttacker()) end
-		
-		local name = dmgInfo:GetAttacker():IsPlayer() and dmgInfo:GetAttacker():Name() or dmgInfo:GetAttacker():GetClass()
-		local bone = ent:TranslatePhysBoneToBone(bone) or 0
-		net.Start("tracePosesSend")
-		net.WriteTable(tracePoses)
-		net.WriteEntity(ent)
-		net.WriteTable(hitBoxs)
-		net.WriteFloat(pen)
-		net.WriteFloat(size)
-		net.WriteInt(bone,32)
-		net.WriteVector(mat:GetTranslation())
-		net.WriteAngle(mat:GetAngles())
-		net.WriteString(ent:GetModel())
-		net.WriteMatrix(ent:GetBoneMatrix(0))
-		net.WriteString(tostring(inf.PrintName or "Unknown"))
-		net.WriteString(tostring(name))
-		net.WriteMatrix(ent:GetBoneMatrix(bone))
-		net.Send(rf)
+		hg.SendTracePoses(ent, org.owner, dmgInfo:GetAttacker(), inf, tracePoses, hitBoxs, dmgPos, dir, pen, size, bone)
 	end
 	
 	local dmgPos = dmgInfo:GetDamagePosition()
