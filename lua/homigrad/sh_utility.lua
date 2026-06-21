@@ -1423,23 +1423,32 @@ local IsValid = IsValid
 --//
 
 --\\ Custom player use
+	local physPickupClasses = {
+		["prop_physics"] = true,
+		["prop_physics_multiplayer"] = true,
+		["func_physbox"] = true,
+	}
+
 	hook.Add("PlayerUse","nouseinfake",function(ply,ent)
 		local class = ent:GetClass()
 
 		if class == "momentary_rot_button" then return end
+
 		local ductcount = hgCheckDuctTapeObjects(ent)
 		local nailscount = hgCheckBindObjects(ent)
-		ply.PickUpCooldown = ply.PickUpCooldown or 0
 		if (ductcount and ductcount > 0) or (nailscount and nailscount > 0) then return false end
-		if class == "prop_physics" or class == "prop_physics_multiplayer" or class == "func_physbox" then
+
+		local isPhysPickup = physPickupClasses[class]
+		if isPhysPickup then
 			local PhysObj = ent:GetPhysicsObject()
 			if PhysObj and PhysObj.GetMass and PhysObj:GetMass() > 14 then return false end
 		end
-
-		--if IsValid(ply.FakeRagdoll) then return false end
-		if ply.PickUpCooldown > CurTime() and not IsValid(ply.FakeRagdoll) then return false end
-
-		ply.PickUpCooldown = CurTime() + 0.15
+		
+		if isPhysPickup then
+			ply.PickUpCooldown = ply.PickUpCooldown or 0
+			if ply.PickUpCooldown > CurTime() and not IsValid(ply.FakeRagdoll) then return false end
+			ply.PickUpCooldown = CurTime() + 0.15
+		end
 	end)
 --//
 --\\ set hull
@@ -1491,16 +1500,18 @@ local IsValid = IsValid
 	hook.Add("FindUseEntity","findhguse",function(ply,heldent)
 		if IsValid(heldent) and heldent:GetClass() == "button" then return heldent end
 
-		if not ply:KeyDown(IN_USE) then return false end
+		if IsValid(heldent) and not IsValid(ply.FakeRagdoll) then
+			return heldent
+		end
+
 		local eyetr = hg.eyeTrace(ply,100,nil,nil,nil,checkUse)
+		local ent = eyetr and eyetr.Entity
 
-		local ent = eyetr.Entity
-
-		if !IsValid(ent) then
+		if not IsValid(ent) and eyetr then
 			local tr = {}
 			tr.start = eyetr.HitPos
 			tr.endpos = eyetr.HitPos
-			tr.filter = checkUse	
+			tr.filter = checkUse
 			tr.mins = -hullVec
 			tr.maxs = hullVec
 			tr.mask = MASK_SOLID + CONTENTS_DEBRIS + CONTENTS_PLAYERCLIP
@@ -1510,7 +1521,7 @@ local IsValid = IsValid
 			ent = tr.Entity
 		end
 
-		if !IsValid(ent) then
+		if not IsValid(ent) then
 			ent = heldent
 		end
 
