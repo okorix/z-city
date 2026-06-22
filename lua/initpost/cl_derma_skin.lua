@@ -171,9 +171,6 @@ function SKIN:PaintFrame(panel)
 	surface.DrawRect(0, 0, panel:GetWide(), panel:GetTall())
 
 	local closeVisible = IsValid(panel.btnClose) and panel.btnClose:IsVisible()
-
-	-- print("panel:", panel, IsValid(panel))
-	-- print("btnClose:", panel and panel.btnClose, IsValid(panel and panel.btnClose))
 	local hasTitle = false
 
 	if panel.GetTitle then
