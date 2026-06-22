@@ -170,7 +170,17 @@ function SKIN:PaintFrame(panel)
 	surface.SetDrawColor(30, 30, 30, 150)
 	surface.DrawRect(0, 0, panel:GetWide(), panel:GetTall())
 
-	if (panel:GetTitle() != "" or panel.btnClose:IsVisible()) then
+	local closeVisible = IsValid(panel.btnClose) and panel.btnClose:IsVisible()
+
+	-- print("panel:", panel, IsValid(panel))
+	-- print("btnClose:", panel and panel.btnClose, IsValid(panel and panel.btnClose))
+	local hasTitle = false
+
+	if panel.GetTitle then
+		hasTitle = true
+	end
+
+	if hasTitle or closeVisible then
 		surface.SetDrawColor(hg.VGUI.MainColor)
 		surface.DrawRect(0, 0, panel:GetWide(), 24)
 
