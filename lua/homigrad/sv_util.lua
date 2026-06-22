@@ -1000,32 +1000,32 @@ function hg.CreateAirboatSeats(ent)
 end
 
 hook.Add( "OnEntityCreated", "VechicleChairs", function( ent )
-	timer.Simple(0.1,function()
-		if IsValid(ent) and ent:IsVehicle() and ent.IsValidVehicle and ent:IsValidVehicle() then
-			if ent:IsVehicle() and ent.IsValidVehicle and ent:IsValidVehicle() and ent.SetVehicleEntryAnim then
-				ent:SetVehicleEntryAnim(false)
-			end
-		end
-	end)
+	-- timer.Simple(0.1,function()
+	-- 	if IsValid(ent) and ent:IsVehicle() and ent.IsValidVehicle and ent:IsValidVehicle() then
+	-- 		if ent:IsVehicle() and ent.IsValidVehicle and ent:IsValidVehicle() and ent.SetVehicleEntryAnim then
+	-- 			ent:SetVehicleEntryAnim(false)
+	-- 		end
+	-- 	end
+	-- end)
 	
-	timer.Simple(0, function()
-		if IsValid(ent) and ent:IsVehicle() and ent:GetModel() == "models/nova/airboat_seat.mdl" and not ent.shitass then
-			local UwU = IsValid(ent:GetParent()) and (
-				(ent:GetParent():GetModel() == "models/vehicles/7seatvan.mdl") or 
-				(ent:GetParent():GetModel() == "models/buggy.mdl") or 
-				(ent:GetParent():GetModel() == "models/vehicles/buggy_elite.mdl") or 
-				(ent:GetParent():GetModel() == "models/vehicle.mdl")
-			) and ent:GetParent().DriverSeat == ent
+	-- timer.Simple(0, function()
+	-- 	if IsValid(ent) and ent:IsVehicle() and ent:GetModel() == "models/nova/airboat_seat.mdl" and not ent.shitass then
+	-- 		local UwU = IsValid(ent:GetParent()) and (
+	-- 			(ent:GetParent():GetModel() == "models/vehicles/7seatvan.mdl") or 
+	-- 			(ent:GetParent():GetModel() == "models/buggy.mdl") or 
+	-- 			(ent:GetParent():GetModel() == "models/vehicles/buggy_elite.mdl") or 
+	-- 			(ent:GetParent():GetModel() == "models/vehicle.mdl")
+	-- 		) and ent:GetParent().DriverSeat == ent
 			
-			ent:SetModel("models/props_junk/PopCan01a.mdl")
-			ent:SetAngles(ent:LocalToWorldAngles(UwU and Angle(0, -1, 0) or Angle(0,90,0)))
-			ent:SetPos(ent:GetPos() + vector_up * 3 + ent:GetAngles():Forward() * 5)
-		end
-	end)
+	-- 		ent:SetModel("models/props_junk/PopCan01a.mdl")
+	-- 		ent:SetAngles(ent:LocalToWorldAngles(UwU and Angle(0, -1, 0) or Angle(0,90,0)))
+	-- 		ent:SetPos(ent:GetPos() + vector_up * 3 + ent:GetAngles():Forward() * 5)
+	-- 	end
+	-- end)
 	
-	if ent:GetClass() == "prop_vehicle_airboat" then
-		hg.CreateAirboatSeats(ent)
-	end
+	-- if ent:GetClass() == "prop_vehicle_airboat" then
+	-- 	hg.CreateAirboatSeats(ent)
+	-- end
 end )
 
 local replace_ammo = {
@@ -1912,4 +1912,11 @@ hook.Add("SetupMove", "AntiCrouchSpam", function(ply, mvd, cmd) -- на само
 	end
 
 	ply.OldCrouchState = mvd:KeyDown( IN_DUCK )
+end)
+
+hook.Add("PlayerSpawn", "sandboxloadout", function(player, transition)
+	if engine.ActiveGamemode() == "sandbox" then
+		player:Give("weapon_physgun")
+		player:Give("gmod_tool")
+	end
 end)
