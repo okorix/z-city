@@ -643,12 +643,15 @@ hook.Add( "HG.InputMouseApply", "FreezeTurning", function( tbl )
 
 end )
 
+local wiremodCameraControllerEnabled = false
+
 function hg.ShouldCamDraw(ply)
 	ply = ply or LocalPlayer()
 
 	if g_VR and g_VR.active then return false end
 	if not IsValid(ply) then return false end
 	if GetViewEntity() ~= ply then return false end
+	if wiremodCameraControllerEnabled then return false end
 
 	if not ply.LookupBone or not ply:LookupBone("ValveBiped.Bip01_Head1") then return false end
 	if not ply.GetAimVector then return false end
@@ -862,3 +865,28 @@ end )
 --hook.Add( "PreDrawOpaqueRenderables", "FPS_Fog", function( bDepth, bSkybox )
 --	--DrawFog(bDepth, bSkybox)
 --end )
+
+hook.Add( "InitPostEntity", "hg_wiremod_cam_hack", function() // camera bug outs when hg cam is active and wiremod camera controller is active, so we do this hack
+	local receivers = net.Receivers
+	if receivers["wire_camera_controller_toggle"] then
+		local originalReceive = receivers["wire_camera_controller_toggle"]
+
+		receivers["wire_camera_controller_toggle"] = function( len )
+			originalReceive()
+
+			local info = debug.getinfo( originalReceive, "uS" )
+			local variables = {}
+
+			if ( info != nil && info.what == "Lua" ) then
+				local upvalues = info.nups
+
+				for i = 1, upvalues do
+					local key, value = debug.getupvalue( originalReceive, i )
+					variables[ key ] = value
+				end
+			end
+
+			wiremodCameraControllerEnabled = variables["enabled"]
+		end
+	end
+end )
