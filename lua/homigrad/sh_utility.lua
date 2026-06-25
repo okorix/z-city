@@ -1498,12 +1498,6 @@ local IsValid = IsValid
 	}
 
 	hook.Add("FindUseEntity","findhguse",function(ply,heldent)
-		if IsValid(heldent) and heldent:GetClass() == "button" then return heldent end
-
-		if IsValid(heldent) and not IsValid(ply.FakeRagdoll) then
-			return heldent
-		end
-
 		local eyetr = hg.eyeTrace(ply,100,nil,nil,nil,checkUse)
 		local ent = eyetr and eyetr.Entity
 

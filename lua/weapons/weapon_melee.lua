@@ -846,7 +846,7 @@ function SWEP:Attack(owner, ent, vellen, attacktype, inattackLength)
         normal:RotateAroundAxis(normal:Up(), ((0.5 - inattackLength) * ((attacktype and self.AttackRads2 or self.AttackRads) or 65)))
         normal:RotateAroundAxis(normal:Up(), (i - amt * 0.5) * 1)
         
-        --debugoverlay.Line(eyetr.StartPos, eyetr.StartPos + normal:Forward() * (self:GetAttackLength() + vellen), 3, color_white)
+        -- debugoverlay.Line(eyetr.StartPos, eyetr.StartPos + normal:Forward() * (self:GetAttackLength() + vellen), 3, color_white)
 
         local tr = {}
 
@@ -2062,3 +2062,114 @@ end
 
     return true
 end]]
+
+if CLIENT then
+    local hg_setmeleestats = CreateClientConVar("hg_setmeleestats", "0", false, false, "", 0, 1)
+    local hg_showmeleeattackpos = CreateClientConVar("hg_showmeleeattackpos", "0", false, false, "", 0, 1)
+
+    local _meleeFrame
+
+    local function PrintAndCopy(wep)
+        local function fv(v) return math.Round(v[1], 4) .. ", " .. math.Round(v[2], 4) .. ", " .. math.Round(v[3], 4) end
+        local str =
+            "SWEP.HoldPos = Vector(" .. fv(wep.HoldPos) .. ")\n" ..
+            "SWEP.HoldAng = Angle(" .. fv(wep.HoldAng) .. ")\n" ..
+            "SWEP.weaponPos = Vector(" .. fv(wep.weaponPos) .. ")\n" ..
+            "SWEP.weaponAng = Angle(" .. fv(wep.weaponAng) .. ")\n" ..
+            "SWEP.SuicidePos = Vector(".. fv(wep.SuicidePos) .. ")\n" ..
+            "SWEP.SuicideAng = Vector(".. fv(wep.SuicideAng) .. ")\n"
+        print(str)
+        SetClipboardText(str)
+    end
+
+    local function OpenFrame(wep)
+        if IsValid(_meleeFrame) then _meleeFrame:Remove() end
+
+        local frame = vgui.Create("DFrame")
+        frame:SetSize(380, 520)
+        frame:Center()
+        frame:SetTitle("hg_setmeleestats")
+        frame:MakePopup()
+        _meleeFrame = frame
+
+        local scroll = vgui.Create("DScrollPanel", frame)
+        scroll:Dock(FILL)
+        scroll:DockMargin(4, 0, 4, 4)
+
+        local propDefs = {
+            { name = "HoldPos",   isAng = false, comps = { "X", "Y", "Z" } },
+            { name = "HoldAng",   isAng = true,  comps = { "P", "Y", "R" } },
+            { name = "weaponPos", isAng = false, comps = { "X", "Y", "Z" } },
+            { name = "weaponAng", isAng = true,  comps = { "P", "Y", "R" } },
+            { name = "SuicidePos", isAng = false, comps = { "X", "Y", "Z" } },
+            { name = "SuicideAng", isAng = true,  comps = { "P", "Y", "R" } },
+        }
+
+        local originals = {}
+        for _, def in ipairs(propDefs) do
+            originals[def.name] = { wep[def.name][1], wep[def.name][2], wep[def.name][3] }
+        end
+
+        for _, def in ipairs(propDefs) do
+            local label = vgui.Create("DLabel", scroll)
+            label:SetText(def.name)
+            label:SetFont("DermaDefaultBold")
+            label:Dock(TOP)
+            label:DockMargin(0, 6, 0, 2)
+            label:SetTall(16)
+
+            for i, comp in ipairs(def.comps) do
+                local slider = vgui.Create("DNumSlider", scroll)
+                slider:SetText(comp)
+                slider:SetMin(def.isAng and -360 or -50)
+                slider:SetMax(def.isAng and 360 or 50)
+                slider:SetDefaultValue(wep[def.name][i])
+                slider:SetDecimals(2)
+                slider:Dock(TOP)
+                slider:SetTall(22)
+                slider:SetValue(wep[def.name][i])
+
+                local capDef = def
+                local capI = i
+                slider.OnValueChanged = function(_, v)
+                    if not IsValid(wep) then return end
+                    wep[capDef.name][capI] = v
+                    PrintAndCopy(wep)
+                end
+            end
+        end
+
+        frame.OnClose = function()
+            if IsValid(wep) then
+                for propName, orig in pairs(originals) do
+                    wep[propName][1] = orig[1]
+                    wep[propName][2] = orig[2]
+                    wep[propName][3] = orig[3]
+                end
+            end
+            RunConsoleCommand("hg_setmeleestats", "0")
+        end
+    end
+
+    cvars.AddChangeCallback("hg_setmeleestats", function(_, _, new)
+        if new == "1" then
+            local wep = LocalPlayer():GetActiveWeapon()
+            if IsValid(wep) and wep.HoldPos then
+                OpenFrame(wep)
+            end
+        elseif IsValid(_meleeFrame) then
+            _meleeFrame:Remove()
+        end
+    end, "hg_setmeleestats_cb")
+
+    hook.Add("Think", "hg_showmeleeattackpos", function()
+        if not hg_showmeleeattackpos:GetBool() then return end
+        local ply = LocalPlayer()
+        local wep = ply:GetActiveWeapon()
+        if not wep.GetAttackLength or not wep.Attack then return end
+        local ent = hg.GetCurrentCharacter(ply)
+        local vellen = ent:GetVelocity():Length()
+        local trace = wep:Attack(ply, ent, vellen, false, 0.5)
+        debugoverlay.Line(trace.StartPos, trace.HitPos, 0.025, Color(255, 0, 0), true)
+    end)
+end

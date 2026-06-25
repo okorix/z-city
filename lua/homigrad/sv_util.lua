@@ -1920,3 +1920,39 @@ hook.Add("PlayerSpawn", "sandboxloadout", function(player, transition)
 		player:Give("gmod_tool")
 	end
 end)
+
+local mansionItemsReplacementTbl = {
+	["hmcd_cuess"] = "wep_hmcd_mansion_cuestick",
+	["hmcd_pokers"] = "wep_hmcd_mansion_poker",
+	["hmcd_pencil"] = "wep_hmcd_mansion_pencils",
+	["hmcd_knives"] = "wep_hmcd_mansion_knife",
+	["hmcd_cup"] = "weapon_hg_mug",
+	["hmcd_food"] = "weapon_bigconsumable",
+	["hmcd_sheet"] = "ent_hmcd_mansion_sheet",
+}
+
+local function replaceMansionItems()
+	for i,v in pairs(mansionItemsReplacementTbl) do
+		for k,ent in pairs(ents.FindByName(i)) do
+			local pos = ent:GetPos()
+			local ang = ent:GetAngles()
+			ent:Remove()
+
+			local newEnt = ents.Create(v)
+			newEnt:SetPos(pos)
+			newEnt:SetAngles(ang)
+			newEnt:Spawn()
+			newEnt.init = true
+			newEnt.IsSpawned = true
+			newEnt:GetPhysicsObject():EnableMotion(false)
+			timer.Simple(1, function()
+				if IsValid(newEnt) and IsValid(newEnt:GetPhysicsObject()) then
+					newEnt:GetPhysicsObject():EnableMotion(true)
+				end
+			end)
+		end
+	end
+end
+
+hook.Add( "PostCleanupMap", "replaceMansionItems", replaceMansionItems)
+hook.Add("InitPostEntity", "replaceMansionItems", replaceMansionItems)
