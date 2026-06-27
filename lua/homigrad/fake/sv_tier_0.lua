@@ -665,7 +665,7 @@ local tr = {
 
 hook.Add("Should Fake Up","speedhuy",function(ply)
 	if IsValid(ply.FakeRagdoll) then
-		if ply.FakeRagdoll:GetVelocity():Length() > 200 then return false end
+		if hg.IsRagFast(ply.FakeRagdoll) then return false end
 		if (ply.organism.stun - CurTime()) > 0 then return false end
 		if (ply.organism.lightstun - CurTime()) > 0 then return false end
 		if bit.band(ply.FakeRagdoll:GetFlags(),FL_DISSOLVING) == FL_DISSOLVING then return false end
@@ -871,7 +871,7 @@ function hg.RagdollOwner(ragdoll)
 	return IsValid(ply) and ply.FakeRagdoll == ragdoll and ply
 end
 
-function hg.RagdollCarDetach(ragdoll,ply,fast)
+function hg.RagdollCarDetach(ragdoll,ply,veh)
 	if ragdoll then
 		ply:SetCollisionGroup(COLLISION_GROUP_IN_VEHICLE)
 		--ply:SetSolidFlags(bit.bor(ply:GetSolidFlags(), FSOLID_NOT_SOLID, FSOLID_TRIGGER, FSOLID_USE_TRIGGER_BOUNDS))
@@ -887,16 +887,24 @@ function hg.RagdollCarDetach(ragdoll,ply,fast)
 		ragdoll.removingwelds = nil
 		ragdoll:SetParent()
 
+		local fast = hg.IsRagFast(ragdoll)
+
 		if fast then
 			ragdoll:GetPhysicsObject():ApplyForceCenter(ragdoll:GetVelocity():GetNormalized() * 10000)
 			ragdoll:GetPhysicsObject():ApplyForceCenter(vector_up * 10000)
 
-			veh:EmitSound("zbattle/glass_shatter.ogg")
+			if IsValid(veh) then
+				veh:EmitSound("zbattle/glass_shatter.ogg")
+			end
 		end
 	else
 		ply:SetCollisionGroup(COLLISION_GROUP_PLAYER)
 		--ply:SetSolidFlags(bit.band(ply:GetSolidFlags(), bit.bnot(FSOLID_NOT_SOLID), bit.bnot(FSOLID_TRIGGER), bit.bnot(FSOLID_USE_TRIGGER_BOUNDS)))
 	end
+end
+
+function hg.IsRagFast(ragdoll)
+	return IsValid(ragdoll) and ragdoll:GetVelocity():Length() > 200
 end
 
 hook.Add("PlayerDisconnected", "hg-killniers", function(ply)
@@ -1010,12 +1018,11 @@ hook.Add("PlayerLeaveVehicle","allowweapons",function(ply,veh)
 	//	hg.FakeUp(ply, true)
 	//end
 	local ragdoll = ply.FakeRagdoll
-	local fast = IsValid(ragdoll) and ragdoll:GetVelocity():Length() > 200
 	
 	if (ply.switchingseat) and ply:Alive() then
 		hg.FakeUp(ply, true, ply.switchingseat)
 	else
-		hg.RagdollCarDetach(ragdoll,ply,fast)
+		hg.RagdollCarDetach(ragdoll,ply,veh)
 	end
 
 	hg.fallfromveh = nil

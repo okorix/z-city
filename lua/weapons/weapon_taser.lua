@@ -195,7 +195,7 @@ function SWEP:Shoot(override)
             end
 
 			if ply:IsPlayer() and ply:InVehicle() then
-				hg.RagdollCarDetach(ent,ply,false)
+				hg.RagdollCarDetach(ent,ply,ply:GetVehicle())
 			end
 
 			local drugged = ply.organism and ply.organism.analgesia > 0.5
