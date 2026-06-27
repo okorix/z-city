@@ -1002,7 +1002,7 @@ function SWEP:ApplyForce()
 
 					self.Checking = math.min(self.Checking + FrameTime() * 2, 10)
 				else
-					ply:Notify("I dont think I need to check their vitals.", 10)
+					-- ply:Notify("I dont think I need to check their vitals.", 10)
 				end
 			end
 		end
