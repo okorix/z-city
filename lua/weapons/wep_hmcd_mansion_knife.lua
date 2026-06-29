@@ -41,7 +41,7 @@ end
 SWEP.setlh = false
 SWEP.setrh = true
 SWEP.TwoHanded = false
-SWEP.NoHolster = true
+SWEP.NoHolster = false
 
 SWEP.HoldPos = Vector(-10, 3, -2)
 SWEP.HoldAng = Angle(-10, 5, 0)
