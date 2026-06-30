@@ -223,11 +223,11 @@ CalcView = function(ply, origin, angles, fov, znear, zfar)
 		fakeTimer = fakeTimer or CurTime() + 30
 	end
 	
-	if not lply:Alive() and follow and ((fakeTimer < CurTime()) or lply:KeyPressed(IN_RELOAD) or lply:KeyPressed(IN_ATTACK) or lply:KeyPressed(IN_ATTACK2)) then
-		follow = nil
+	-- if not lply:Alive() and follow and ((fakeTimer < CurTime()) or lply:KeyPressed(IN_RELOAD) or lply:KeyPressed(IN_ATTACK) or lply:KeyPressed(IN_ATTACK2)) then
+	-- 	follow = nil
 
-		return
-	end
+	-- 	return
+	-- end
 	
 	if not lply:Alive() and not follow then
 		return hook.Run("HG_CalcView", ply, origin, angles, fov, znear, zfar)
