@@ -827,9 +827,9 @@ hook.Add("PostDrawTranslucentRenderables", "homigrad-wound-debug", function()
 	local bestDist = math.huge
 
 	for _, ply in player.Iterator() do
+		if ply == LocalPlayer() then continue end
 		ply = hg.GetCurrentCharacter(ply)
 
-		if ply == LocalPlayer() then continue end
 		if not IsValid(ply) then continue end
 
 		local org = ply.organism
