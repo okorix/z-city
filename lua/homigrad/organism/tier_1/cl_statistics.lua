@@ -390,6 +390,10 @@ local function ensureBulletModel()
 	return bulletmodel
 end
 
+local function normalize(val, min, max)
+    return (val - min) / (max - min)
+end
+
 ensureCsModel()
 ensureSkiletModel()
 ensureBulletModel()
@@ -518,6 +522,8 @@ local function decodeHit()
 	if #hg.hits >= hg_max_hitshow:GetInt() then table.remove(hg.hits, 1) end
 
 	local armors = table.Copy((hg.RagdollOwner(ent) or ent):GetNetVar("Armor"))
+
+	size = normalize(size, 1, 4)
 
 	table.insert(hg.hits, {
 		tracePoses = tracePoses,
