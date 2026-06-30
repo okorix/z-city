@@ -799,9 +799,9 @@ hook.Add("HUDPaint", "homigrad-wound-debug", function()
 
 	for i, text in ipairs(organs2) do
 		local y = ScreenScale(200) + ScreenScale((i - 1) * 16)
-		draw.RoundedBox(0, ScreenScale(10), y, weight * 1.5, ScreenScale(16), littleblack)
-		draw.RoundedBox(1, ScreenScale(11), y, weight * 1.5 - 5, ScreenScale(16), color_black)
-		draw.SimpleText((hg.organism.translationTbl[text] or text), "HomigradFont", ScreenScale(12), y, white)
+		draw.RoundedBox(0, ScreenScale(75), y, weight * 1.5, ScreenScale(16), littleblack)
+		draw.RoundedBox(1, ScreenScale(75), y, weight * 1.5 - 5, ScreenScale(16), color_black)
+		draw.SimpleText((hg.organism.translationTbl[text] or text), "HomigradFont", ScreenScale(80), y, white)
 	end
 end)
 
