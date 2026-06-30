@@ -804,3 +804,115 @@ hook.Add("HUDPaint", "homigrad-wound-debug", function()
 		draw.SimpleText((hg.organism.translationTbl[text] or text), "HomigradFont", ScreenScale(12), y, white)
 	end
 end)
+
+local hg_wound_debug = GetConVar("hg_wound_debug") or CreateClientConVar("hg_wound_debug", 0, true, false, "show wounds", 0, 1)
+
+local red = Color(255,0,0)
+local white = Color(255,255,255)
+local black = Color(0,0,0)
+
+local lookedWound
+local lookedPos
+
+hook.Add("PostDrawTranslucentRenderables", "homigrad-wound-debug", function()
+	if not hg_wound_debug:GetBool() then return end
+	if not LocalPlayer():IsAdmin() then return end
+
+	lookedWound = nil
+	lookedPos = nil
+
+	local eyePos = EyePos()
+	local eyeDir = EyeAngles():Forward()
+
+	local bestDist = math.huge
+
+	for _, ply in player.Iterator() do
+		ply = hg.GetCurrentCharacter(ply)
+
+		if not IsValid(ply) then continue end
+
+		local org = ply.organism
+		if not org or not org.wounds then continue end
+
+		for _, wound in ipairs(org.wounds) do
+			local bone = ply:LookupBone(wound[4] or "")
+			if not bone then continue end
+
+			local matrix = ply:GetBoneMatrix(bone)
+			if not matrix then continue end
+
+			local pos = LocalToWorld(
+				wound[2],
+				angle_zero,
+				matrix:GetTranslation(),
+				matrix:GetAngles()
+			)
+
+			render.DrawWireframeSphere(
+				pos,
+				1.5,
+				8,
+				8,
+				Color(255, 0, 0)
+			)
+
+			local dist = util.DistanceToLine(
+				eyePos,
+				eyePos + eyeDir * 10000,
+				pos
+			)
+
+			if dist < 3 then
+				local d = eyePos:DistToSqr(pos)
+
+				if d < bestDist then
+					bestDist = d
+					lookedWound = wound
+					lookedPos = pos
+				end
+			end
+		end
+	end
+end)
+
+hook.Add("HUDPaint", "homigrad-wound-debug-info", function()
+	if not lookedWound or not lookedPos then return end
+
+	local scr = (lookedPos + Vector(0, 0, 4)):ToScreen()
+
+	draw.SimpleTextOutlined(
+		"Blood: "..math.Round(lookedWound[1], 2),
+		"DefaultFixedDropShadow",
+		scr.x,
+		scr.y,
+		color_white,
+		TEXT_ALIGN_CENTER,
+		TEXT_ALIGN_BOTTOM,
+		1,
+		color_black
+	)
+
+	draw.SimpleTextOutlined(
+		"Bone: "..lookedWound[4],
+		"DefaultFixedDropShadow",
+		scr.x,
+		scr.y + 14,
+		color_white,
+		TEXT_ALIGN_CENTER,
+		TEXT_ALIGN_BOTTOM,
+		1,
+		color_black
+	)
+
+	draw.SimpleTextOutlined(
+		"Time: "..math.Round(lookedWound[5], 2),
+		"DefaultFixedDropShadow",
+		scr.x,
+		scr.y + 28,
+		color_white,
+		TEXT_ALIGN_CENTER,
+		TEXT_ALIGN_BOTTOM,
+		1,
+		color_black
+	)
+end)

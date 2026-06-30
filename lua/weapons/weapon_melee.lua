@@ -2065,7 +2065,7 @@ end]]
 
 if CLIENT then
     local hg_setmeleestats = CreateClientConVar("hg_setmeleestats", "0", false, false, "", 0, 1)
-    local hg_showmeleeattackpos = CreateClientConVar("hg_showmeleeattackpos", "0", false, false, "", 0, 1)
+    local hg_show_meleeattackpos = CreateClientConVar("hg_show_meleeattackpos", "0", false, false, "", 0, 1)
 
     local _meleeFrame
 
@@ -2162,9 +2162,10 @@ if CLIENT then
         end
     end, "hg_setmeleestats_cb")
 
-    hook.Add("Think", "hg_showmeleeattackpos", function()
-        if not hg_showmeleeattackpos:GetBool() then return end
+    hook.Add("Think", "hg_show_meleeattackpos", function()
+        if not hg_show_meleeattackpos:GetBool() then return end
         local ply = LocalPlayer()
+        if not ply:IsAdmin() then return end
         local wep = ply:GetActiveWeapon()
         if not wep.GetAttackLength or not wep.Attack then return end
         local ent = hg.GetCurrentCharacter(ply)

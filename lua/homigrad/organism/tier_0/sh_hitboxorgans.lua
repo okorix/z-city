@@ -99,6 +99,10 @@ local white, red, blue, black = Color(255, 255, 255), Color(255, 0, 0), Color(0,
 local hg_show_hitbox = ConVarExists("hg_show_hitbox") and GetConVar("hg_show_hitbox") or CreateClientConVar("hg_show_hitbox", "0", false, false, "shows custom players hitboxes, work only for admins or with sv_cheats 1 enabled")
 local hg_show_hitbox_dir = ConVarExists("hg_show_hitbox_dir") and GetConVar("hg_show_hitbox_dir") or CreateClientConVar("hg_show_hitbox_dir", "0", false, false, "work only for admins or with sv_cheats 1 enabled")
 render_DrawWireframeBox = render.DrawWireframeBox
+
+local lookedOrgan
+local lookedPos
+
 hook.Add("PostDrawTranslucentRenderables", "homigrad-organism", function()
 	if not hg_show_hitbox:GetBool() then return end
 	if not LocalPlayer():IsAdmin() then return end
@@ -116,7 +120,19 @@ hook.Add("PostDrawTranslucentRenderables", "homigrad-organism", function()
 			//pos, dir, size, maxpen, boxs, center, endDis, organs, ricochetable, funcInput, ...
 			local endPos, hitBoxs, inputHole, outputHole = hg.organism.Trace(start, dir, 1, 0, boxs, pos, sphere, organs, false, hg.organism.Trace_Bullet, organs)
 			--render.DrawWireframeBox(endPos, angZero, -box, box)
-			
+
+			for i = 1, #boxs do
+				if not hitBoxs[i] then continue end
+
+				local box = boxs[i]
+				local organ = box[6] and organs[box[6]][box[7]]
+				if not organ then continue end
+
+				lookedOrgan = organ[1]
+				lookedPos = box[1]
+				break
+			end
+
 			render.DrawWireframeBox(start, LocalPlayer():EyeAngles(), -Vector(0,distance / 50,distance / 50),Vector(distance / 1,distance / 50,distance / 50))
 			for i = 1, #boxs do
 				local box = boxs[i]
@@ -139,5 +155,23 @@ hook.Add("PostDrawTranslucentRenderables", "homigrad-organism", function()
 			end
 		end
 		--render.DrawWireframeSphere(pos,sphere,16,16,color2)
+	end
+end)
+
+hook.Add("HUDPaint", "homigrad-organism-textdebug", function()
+	if lookedOrgan and lookedPos and LocalPlayer():IsAdmin() then
+		local scr = lookedPos:ToScreen()
+
+		draw.SimpleTextOutlined(
+			lookedOrgan.. " ("..hg.organism.translationTbl[lookedOrgan]..")",
+			"DefaultFixedDropShadow",
+			scr.x,
+			scr.y,
+			color_white,
+			TEXT_ALIGN_CENTER,
+			TEXT_ALIGN_CENTER,
+			1,
+			color_black
+		)
 	end
 end)
