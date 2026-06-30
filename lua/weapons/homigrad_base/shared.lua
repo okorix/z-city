@@ -447,9 +447,8 @@ local CantDoIt = {
 --qol lmao
 function SWEP:CanPrimaryAttack()
 	local owner = self:GetOwner()
-	if !IsValid(owner) then return end
 
-	if owner.PlayerClassName and owner.PlayerClassName == "furry" and owner.suiciding then
+	if IsValid(owner) and owner.PlayerClassName and owner.PlayerClassName == "furry" and owner.suiciding then
 		if SERVER then
 			owner:Notify(table.Random(CantDoIt), 20, "cantdoit", 0)
 		end
@@ -509,13 +508,13 @@ function SWEP:Shoot(override)
 	self:PrimaryShootPost()
 end
 
-function SWEP:PrimaryAttack(broadcast)
+function SWEP:PrimaryAttack(broadcast, override)
 	if CLIENT and not IsFirstTimePredicted() then return end
 	if CLIENT and not self:IsClient() then return end
 	if self:KeyDown(IN_USE) and !IsValid(self:GetOwner().FakeRagdoll) then return false end
 	
-	local huy = self:Shoot() ~= false
-	
+	local huy = self:Shoot(override) ~= false
+
 	if SERVER and huy then
 		net.Start("hgwep shoot", true)
 		net.WriteEntity(self)

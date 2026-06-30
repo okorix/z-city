@@ -585,13 +585,13 @@ function SWEP:FireBullet()
 
     local ammotype = hg.ammotypeshuy[self.Primary.Ammo].BulletSettings
     
-	if SERVER and !timer.Exists("ShootWeaponAfterDeath"..self:EntIndex()) then
-		timer.Create("ShootWeaponAfterDeath"..self:EntIndex(), 0.1, 1, function()
-			if (!IsValid(owner) or !owner:Alive()) and self.Primary and self.Primary.Automatic then
-				self:PrimaryAttack()
-			end
-		end)
-	end
+	-- if SERVER and !timer.Exists("ShootWeaponAfterDeath"..self:EntIndex()) then
+	-- 	timer.Create("ShootWeaponAfterDeath"..self:EntIndex(), 0.1, 1, function()
+	-- 		if (!IsValid(owner) or !owner:Alive()) and self.Primary and self.Primary.Automatic then
+	-- 			self:PrimaryAttack()
+	-- 		end
+	-- 	end)
+	-- end
 
     local att = self:GetMuzzleAtt(gun, true)
     if not att then return end

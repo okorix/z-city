@@ -367,6 +367,163 @@ properties.Add( "apply_spasm", {
 	end
 } )
 
+properties.Add( "weapon_menu", {
+	MenuLabel = "Weapon Menu",
+	Order = 14,
+	MenuIcon = "icon16/gun.png",
+
+	Filter = function(self,ent,ply)
+		if not ply:ZCTools_GetAccess() then return false end 
+		if ( !IsValid( ent ) ) then return false end
+		if not ent:IsWeapon() then return false end
+		local class = ent:GetClass()
+		local entStored = weapons.Get(class)
+		if entStored.Base ~= "homigrad_base" then return false end
+		return true
+	end,
+
+	MenuOpen = function( self, option, ent, tr )
+		local submenu = option:AddSubMenu()
+
+		local FillMag = submenu:AddOption("Fill the magazine")
+		FillMag:SetRadio(true)
+		FillMag:SetIsCheckable(true)
+		FillMag.OnChecked = function(s, checked) if checked then self:ApplyWeapon(ent, 0, {}) end end
+
+		local EmptyMag = submenu:AddOption("Empty the magazine")
+		EmptyMag:SetRadio(true)
+		EmptyMag:SetIsCheckable(true)
+		EmptyMag.OnChecked = function(s, checked) if checked then self:ApplyWeapon(ent, 1, {}) end end
+
+		local FireWep = submenu:AddOption("Fire the weapon")
+		FireWep:SetRadio(true)
+		FireWep:SetIsCheckable(true)
+		FireWep.OnChecked = function(s, checked) if checked then self:ApplyWeapon(ent, 2, {}) end end
+
+		local ForceFireWep = submenu:AddOption("Force fire the weapon")
+		ForceFireWep:SetRadio(true)
+		ForceFireWep:SetIsCheckable(true)
+		ForceFireWep.OnChecked = function(s, checked) 
+			if checked then
+				local Window = vgui.Create( "DFrame" )
+				Window:SetTitle( "Force fire the weapon" )
+				Window:SetDraggable( false )
+				Window:ShowCloseButton( false )
+				Window:SetBackgroundBlur( true )
+				Window:SetDrawOnTop( true )
+
+				local InnerPanel = vgui.Create( "DPanel", Window )
+				InnerPanel:SetPaintBackground( false )
+
+				local Text = vgui.Create( "DLabel", InnerPanel )
+				Text:SetText( "Shots count" )
+				Text:SizeToContents()
+				Text:SetContentAlignment( 5 )
+				Text:SetTextColor( color_white )
+
+				local TextEntry = vgui.Create( "DTextEntry", InnerPanel )
+				TextEntry:SetText( "" )
+
+				local Text2 = vgui.Create( "DLabel", InnerPanel )
+				Text2:SetText( "Fire rate" )
+				Text2:SizeToContents()
+				Text2:SetContentAlignment( 5 )
+				Text2:SetTextColor( color_white )
+
+				local TextEntry2 = vgui.Create( "DTextEntry", InnerPanel )
+				TextEntry2:SetText( "" )
+
+				local ButtonPanel = vgui.Create( "DPanel", Window )
+				ButtonPanel:SetTall( 30 )
+				ButtonPanel:SetPaintBackground( false )
+
+				local Button = vgui.Create( "DButton", ButtonPanel )
+				Button:SetText("#dialog.ok" )
+				Button:SizeToContents()
+				Button:SetTall( 20 )
+				Button:SetWide( Button:GetWide() + 20 )
+				Button:SetPos( 5, 5 )
+				Button.DoClick = function()
+					Window:Close()
+					self:ApplyWeapon(ent, 3, {TextEntry:GetInt(), TextEntry2:GetFloat()})
+				end
+
+				local ButtonCancel = vgui.Create( "DButton", ButtonPanel )
+				ButtonCancel:SetText( "#dialog.cancel" )
+				ButtonCancel:SizeToContents()
+				ButtonCancel:SetTall( 20 )
+				ButtonCancel:SetWide( Button:GetWide() + 20 )
+				ButtonCancel:SetPos( 5, 5 )
+				ButtonCancel.DoClick = function() Window:Close() end
+				ButtonCancel:MoveRightOf( Button, 5 )
+
+				ButtonPanel:SetWide( Button:GetWide() + 5 + ButtonCancel:GetWide() + 10 )
+
+				local w, h = Text:GetSize()
+				w = math.max( w, 400 )
+
+				Window:SetSize( w + 50, h + 70 + 75 + 10 )
+				Window:Center()
+
+				InnerPanel:StretchToParent( 5, 25, 5, 45 )
+
+				Text:StretchToParent(5, -20, 5, 55)
+
+				TextEntry:StretchToParent(5, nil, 5, nil)
+				TextEntry:SetTall(20)
+				TextEntry:SetPos(5, 25)
+
+				Text2:StretchToParent(5, 30, 5, 10)
+
+				TextEntry2:StretchToParent(5, nil, 5, nil)
+				TextEntry2:SetTall(20)
+				TextEntry2:SetPos(5, 70)
+
+				ButtonPanel:CenterHorizontal()
+				ButtonPanel:AlignBottom( 8 )
+
+				Window:MakePopup()
+				Window:DoModal()
+			end 
+		end
+	end,
+
+	ApplyWeapon = function( self, ent, id, additionalTbl )
+		self:MsgStart()
+			net.WriteEntity( ent )
+			net.WriteUInt( id, 8 )
+			net.WriteTable(additionalTbl)
+		self:MsgEnd()
+	end,
+
+	Receive = function( self, length, ply )
+		local ent = net.ReadEntity()
+		local type = net.ReadUInt( 8 )
+		local additionalTbl = net.ReadTable()
+        
+		if not self:Filter(ent, ply) then return end
+
+		if type == 0 then
+			ent:SetClip1(ent:GetMaxClip1())
+		elseif type == 1 then
+			ent:SetClip1(0)
+		elseif type == 2 then
+			ent:PrimaryAttack()
+		elseif type == 3 then
+			if #additionalTbl == 2 and isnumber(additionalTbl[1]) and isnumber(additionalTbl[2]) then
+				local timerName = "weapon_menu_forcesohot".."_"..ent:EntIndex()
+				timer.Create(timerName, additionalTbl[2], additionalTbl[1], function()
+					if not IsValid(ent) then
+						timer.Remove(timerName)
+						return
+					end
+					ent:PrimaryAttack(true, true)
+				end)
+			end
+		end
+	end
+} )
+
 properties.Add("killsilent", {
 	MenuLabel = "Kill (Silent)",
 	Order = 11,
