@@ -313,7 +313,7 @@ properties.Add( "lobotomize", {
     end 
 } )
 
-properties.Add( "apply_spam", {
+properties.Add( "apply_spasm", {
 	MenuLabel = "Apply Spasm",
 	Order = 14,
 	MenuIcon = "pluv/pluv51.png",
