@@ -109,7 +109,7 @@ if CLIENT then
             csent:SetNoDraw(true)
         end
         local ply = self:GetOwner()
-        local tr = ply:GetEyeTrace()
+        local tr = hg.eyeTrace(ply)
 
         if not CanPlace(ply, tr) then return end
 
@@ -131,7 +131,7 @@ function SWEP:PrimaryAttack()
     local ply = self:GetOwner()
     
     if not self:GetPlaced() then
-        local tr = ply:GetEyeTrace()
+        local tr = hg.eyeTrace(ply)
         if not CanPlace(ply, tr) then return end
         if CLIENT then return end
         local pos, ang = tr.HitPos, tr.HitNormal:Angle()
